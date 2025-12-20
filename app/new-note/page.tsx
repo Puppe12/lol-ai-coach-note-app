@@ -42,12 +42,16 @@ export default function NewNotePage() {
       body: JSON.stringify({
         text: noteText,
         draft: draftResult,
-        summonerName,
+        summonerName: summonerName || undefined,
         tags,
       }),
     });
 
     if (!res.ok) {
+      if (res.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
       alert("Failed to save note");
       return;
     }
@@ -175,7 +179,7 @@ export default function NewNotePage() {
 
       <input
         type="text"
-        placeholder="Your summoner name"
+        placeholder="Summoner name (optional)"
         className="w-full border border-[var(--sage-light)] rounded-lg p-3 mb-2 bg-white focus:outline-none focus:ring-2 focus:ring-[var(--sage-medium)] focus:border-transparent transition-all"
         value={summonerName}
         onChange={(e) => setSummonerName(e.target.value)}
@@ -183,14 +187,16 @@ export default function NewNotePage() {
 
       <div className="flex flex-wrap gap-3">
         <button
-          disabled={!imageFile || !summonerName || loadingDraft}
+          disabled={!imageFile || loadingDraft}
           onClick={async () => {
             if (!imageFile) return;
 
             setLoadingDraft(true);
             const form = new FormData();
             form.append("image", imageFile);
-            form.append("summonerName", summonerName);
+            if (summonerName) {
+              form.append("summonerName", summonerName);
+            }
 
             const res = await fetch("/api/draft", {
               method: "POST",

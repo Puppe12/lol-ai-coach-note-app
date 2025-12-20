@@ -18,14 +18,21 @@ export default function NotesPage() {
   const [goals, setGoals] = useState<any>(null);
   const [loadingGoals, setLoadingGoals] = useState(false);
 
-  async function generateGoals(summonerName: string) {
+  async function generateGoals() {
     setLoadingGoals(true);
     try {
       const res = await fetch("/api/goals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ summonerName }),
       });
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          window.location.href = "/login";
+          return;
+        }
+        throw new Error("Failed to generate goals");
+      }
 
       const data = await res.json();
       setGoals(data);
@@ -43,6 +50,10 @@ export default function NotesPage() {
     try {
       const res = await fetch("/api/notes");
       if (!res.ok) {
+        if (res.status === 401) {
+          window.location.href = "/login";
+          return;
+        }
         throw new Error("Failed to fetch notes");
       }
       const resultJSON = await res.json();
@@ -120,7 +131,7 @@ export default function NotesPage() {
         </button>
 
         <button
-          onClick={() => generateGoals("Puppe")}
+          onClick={generateGoals}
           disabled={loadingGoals}
           className="bg-[var(--sage-medium)] text-white px-4 py-2 rounded-lg hover:bg-[var(--sage-dark)] transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
