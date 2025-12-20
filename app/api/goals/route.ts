@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
+import { getUserId } from "@/lib/session";
 import OpenAI from "openai";
 
 const endpoint = process.env.AZURE_OPENAI_ENDPOINT!;
@@ -14,21 +15,21 @@ const ai = new OpenAI({
 
 export const POST = async (req: Request) => {
   try {
-    const { summonerName } = await req.json();
-    if (!summonerName) {
+    const userId = await getUserId();
+    if (!userId) {
       return NextResponse.json(
-        { error: "summonerName required" },
-        { status: 400 }
+        { error: "Authentication required" },
+        { status: 401 }
       );
     }
 
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB || "lolcoach");
 
-    // Get recent notes from this player
+    // Get recent notes from this user
     const notes = await db
       .collection("notes")
-      .find({ summonerName })
+      .find({ userId })
       .sort({ createdAt: -1 })
       .limit(20)
       .toArray();
@@ -36,7 +37,7 @@ export const POST = async (req: Request) => {
     if (notes.length === 0) {
       return NextResponse.json({
         goals: [],
-        message: "No notes found for this summoner",
+        message: "No notes found for this user",
       });
     }
 

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Link from "next/link";
+import Header from "@/app/components/Header";
+import { AuthProvider } from "@/app/contexts/AuthContext";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -27,32 +28,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <header className="bg-[var(--sage-medium)] border-b border-[var(--sage-dark)] shadow-sm">
-          <div className="max-w-5xl mx-auto p-4 flex items-center justify-between">
-            <Link
-              href="/"
-              className="font-bold text-[var(--sage-dark)] hover:text-[var(--sage-dark)]/80 transition-colors"
-            >
-              LoL Coach
-            </Link>
-            <nav className="space-x-3">
-              <Link
-                href="/new-note"
-                className="text-sm text-[var(--sage-dark)] hover:text-[var(--sage-dark)]/80 transition-colors font-medium"
-              >
-                New Note
-              </Link>
-              <Link
-                href="/notes"
-                className="text-sm text-[var(--sage-dark)] hover:text-[var(--sage-dark)]/80 transition-colors font-medium"
-              >
-                Notes
-              </Link>
-            </nav>
-          </div>
-        </header>
-
-        <main>{children}</main>
+        <AuthProvider>
+          <Header />
+          <main>{children}</main>
+        </AuthProvider>
       </body>
     </html>
   );

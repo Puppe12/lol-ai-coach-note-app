@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
+import { getUserId } from "@/lib/session";
 import OpenAI from "openai";
 
 const embeddingModel = process.env.AZURE_OPENAI_EMBEDDINGS!;
@@ -24,6 +25,14 @@ const embedClient = new OpenAI({
 
 export async function POST(req: Request) {
   try {
+    const userId = await getUserId();
+    if (!userId) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
     const { text, draft, summonerName } = await req.json();
 
     if (!text) {
@@ -72,6 +81,7 @@ export async function POST(req: Request) {
       text,
       draft,
       summonerName,
+      userId,
       ai: {
         tags,
         embedding: vector,
@@ -91,16 +101,23 @@ export async function POST(req: Request) {
 
 export async function GET() {
   try {
+    const userId = await getUserId();
+    if (!userId) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
     const client = await clientPromise;
     const db = client.db(mongoDB || "lolcoach");
 
-    // Debug: Log database and collection info
-    console.log("Database name:", db.databaseName);
-    console.log("Collections:", await db.listCollections().toArray());
-
-    const result = await db.collection("notes").find({}).toArray();
-    console.log("Found notes count:", result.length);
-    console.log("Sample note:", result[0]);
+    // Filter notes by userId
+    const result = await db
+      .collection("notes")
+      .find({ userId })
+      .sort({ createdAt: -1 })
+      .toArray();
 
     return NextResponse.json({ ok: true, notes: result });
   } catch (err: any) {
