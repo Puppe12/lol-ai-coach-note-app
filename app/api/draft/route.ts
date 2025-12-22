@@ -11,16 +11,6 @@ const client = new OpenAI({
     "api-key": process.env.AZURE_OPENAI_API_KEY!,
   },
 });
-// Validate environment variables at startup
-if (!process.env.AZURE_OPENAI_API_KEY) {
-  console.error("AZURE_OPENAI_API_KEY is not set");
-}
-if (!process.env.AZURE_OPENAI_ENDPOINT) {
-  console.error("AZURE_OPENAI_ENDPOINT is not set");
-}
-if (!process.env.AZURE_OPENAI_DEPLOYMENT_VISION) {
-  console.error("AZURE_OPENAI_DEPLOYMENT_VISION is not set");
-}
 
 export async function POST(req: Request) {
   try {
@@ -95,32 +85,12 @@ Output STRICT JSON in this exact shape:
     const content = response.choices[0]?.message?.content;
 
     if (!content) {
-      throw new Error("No response from model");
+      throw new Error("Analyziz failed, make sure selected image includes clear endgame lobby screenshot");
     }
 
     return NextResponse.json(JSON.parse(content));
   } catch (error: any) {
     console.error("Draft generation failed:", error);
-
-    // Provide more detailed error information
-    if (error?.status === 401) {
-      console.error(
-        "Authentication failed. Check your AZURE_OPENAI_API_KEY and endpoint configuration."
-      );
-      console.error("Endpoint:", process.env.AZURE_OPENAI_ENDPOINT);
-      console.error("Deployment:", process.env.AZURE_OPENAI_DEPLOYMENT_VISION);
-      console.error("API Key present:", !!process.env.AZURE_OPENAI_API_KEY);
-
-      return NextResponse.json(
-        {
-          error:
-            "Authentication failed. Please check your Azure OpenAI credentials.",
-          details:
-            "401 Unauthorized - Invalid API key or endpoint configuration",
-        },
-        { status: 401 }
-      );
-    }
 
     return NextResponse.json(
       {
