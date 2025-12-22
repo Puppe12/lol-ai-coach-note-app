@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import GoalsDisplay from "@/app/components/GoalsDisplay";
+import { useAuth } from "@/app/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 
 type Note = {
   _id: string;
@@ -11,6 +13,8 @@ type Note = {
 };
 
 export default function NotesPage() {
+  const router = useRouter();
+  const { userId, isLoading } = useAuth();
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

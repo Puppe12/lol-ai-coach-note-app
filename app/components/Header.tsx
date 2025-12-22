@@ -5,7 +5,7 @@ import { useAuth } from "@/app/contexts/AuthContext";
 
 export default function Header() {
   const { userId, isLoading, logout } = useAuth();
-
+  const isLoggedIn = userId !== null;
   return (
     <header className="bg-[var(--sage-medium)] border-b border-[var(--sage-dark)] shadow-sm">
       <div className="max-w-5xl mx-auto p-4 flex items-center justify-between">
@@ -16,6 +16,8 @@ export default function Header() {
           LoL Coach
         </Link>
         <nav className="flex items-center space-x-3">
+          {isLoggedIn && (
+            <>
           <Link
             href="/new-note"
             className="text-sm text-white hover:text-white/80 transition-colors font-medium"
@@ -28,6 +30,8 @@ export default function Header() {
           >
             Notes
           </Link>
+          </>
+          )}
           {isLoading ? (
             <div className="text-sm text-white/50">Loading...</div>
           ) : userId ? (
