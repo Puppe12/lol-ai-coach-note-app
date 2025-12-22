@@ -1,8 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/app/contexts/AuthContext";
 
 export default function NewNotePage() {
+  const router = useRouter();
+  const { userId, isLoading } = useAuth();
+
+  // All hooks must be declared before any conditional returns
   const [noteText, setNoteText] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
 
@@ -17,6 +23,25 @@ export default function NewNotePage() {
   const [tagExplanations, setTagExplanations] = useState<
     Record<string, string>
   >({});
+
+  useEffect(() => {
+    if (!isLoading && !userId) {
+      router.push("/login");
+    }
+  }, [isLoading, userId, router]);
+
+  if (isLoading) {
+    return (
+      <div className="max-w-2xl mx-auto p-6">
+        <p className="text-[var(--text-muted)]">Loading...</p>
+      </div>
+    );
+  }
+
+  // Don't render content if not authenticated (will redirect)
+  if (!userId) {
+    return null;
+  }
 
   const handleNoteChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setNoteText(e.target.value);
