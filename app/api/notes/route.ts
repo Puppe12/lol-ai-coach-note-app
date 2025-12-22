@@ -25,6 +25,7 @@ const embedClient = new OpenAI({
 
 export async function POST(req: Request) {
   try {
+    /* TODO make into a helper to be called? */
     const userId = await getUserId();
     if (!userId) {
       return NextResponse.json(
