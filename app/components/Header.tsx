@@ -10,18 +10,18 @@ export default function Header() {
   const { theme, toggleTheme } = useTheme();
   const isLoggedIn = userId !== null;
   return (
-    <header className="bg-[var(--sage-medium)] border-b border-[var(--sage-dark)] shadow-sm">
+    <header className="bg-[var(--sage-medium)] dark:bg-[var(--primary-dark)] border-b border-[var(--sage-dark)] dark:border-[var(--border)] shadow-sm">
       <div className="max-w-5xl mx-auto p-4 flex items-center justify-between">
         <Link
           href="/"
-          className="font-bold text-white hover:text-[var(--sage-dark)]/80 transition-colors"
+          className="font-bold text-white hover:text-[var(--sage-light)] transition-colors"
         >
           LoL Coach
         </Link>
         <nav className="flex items-center space-x-3">
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-lg bg-[var(--sage-dark)]/20 hover:bg-[var(--sage-dark)]/30 transition-colors"
+            className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
             aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
             title={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
           >
@@ -41,7 +41,7 @@ export default function Header() {
               </Link>
               <Link
                 href="/notes"
-                className="text-sm text-white hover:text-[var(--sage-dark)]/80 transition-colors font-medium"
+                className="text-sm text-white hover:text-white/80 transition-colors font-medium"
               >
                 Notes
               </Link>
@@ -51,12 +51,12 @@ export default function Header() {
             <div className="text-sm text-white/50">Loading...</div>
           ) : userId ? (
             <>
-              <span className="text-sm text-[var(--sage-dark)]/70 font-medium">
+              <span className="text-sm text-white/70 font-medium">
                 {userId}
               </span>
               <button
                 onClick={logout}
-                className="bg-[var(--sage-medium)] text-white px-4 py-2 rounded-lg shadow-sm hover:bg-[var(--sage-dark)] active:bg-[var(--sage-light)] active:text-[var(--sage-dark)] transition-colors font-medium"
+                className="bg-white/10 text-white px-4 py-2 rounded-lg shadow-sm hover:bg-white/20 transition-colors font-medium"
               >
                 Logout
               </button>
@@ -64,7 +64,7 @@ export default function Header() {
           ) : (
             <Link
               href="/login"
-              className="bg-[var(--sage-medium)] text-white px-4 py-2 rounded-lg shadow-sm hover:bg-[var(--sage-dark)] active:bg-[var(--sage-light)] active:text-[var(--sage-dark)] transition-colors font-medium"
+              className="bg-white/10 text-white px-4 py-2 rounded-lg shadow-sm hover:bg-white/20 transition-colors font-medium"
             >
               Login
             </Link>

@@ -23,22 +23,22 @@
   --error-border: #fecaca;
 }
 
-/* Dark Theme - High contrast black/gray/white for accessibility */
+/* Dark Theme - Black with sage green accents */
 [data-theme="dark"] {
   --background: #1a1a1a;
-  --foreground: #ffffff;
-  --primary: #4a4a4a;
-  --primary-dark: #2a2a2a;
-  --secondary: #3a3a3a;
-  --border: #4a4a4a;
-  --card-bg: #2a2a2a;
-  --text-muted: #a0a0a0;
+  --foreground: #e8e8e8;
+  --primary: #a1bc98;
+  --primary-dark: #778873;
+  --secondary: #778873;
+  --border: #3a3a3a;
+  --card-bg: #252525;
+  --text-muted: #b0b0b0;
 
-  /* Override sage colors for dark mode */
+  /* Sage colors adapted for dark mode */
   --sage-cream: #1a1a1a;
-  --sage-light: #3a3a3a;
-  --sage-medium: #4a4a4a;
-  --sage-dark: #ffffff;
+  --sage-light: #778873;
+  --sage-medium: #a1bc98;
+  --sage-dark: #d2dcb6;
 
   /* Error colors for dark mode */
   --error-text: #fca5a5;

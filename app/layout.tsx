@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "@mantine/core/styles.css";
+import "@mantine/notifications/styles.css";
 import Header from "@/app/components/Header";
 import { AuthProvider } from "@/app/contexts/AuthContext";
 import { ThemeProvider } from "@/app/contexts/ThemeContext";
+import { MantineThemeProvider } from "@/app/components/MantineThemeProvider";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -30,10 +33,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
-          <AuthProvider>
-            <Header />
-            <main>{children}</main>
-          </AuthProvider>
+          <MantineThemeProvider>
+            <AuthProvider>
+              <Header />
+              <main>{children}</main>
+            </AuthProvider>
+          </MantineThemeProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -18,6 +18,9 @@ export default function NewNotePage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [draftResult, setDraftResult] = useState<any>(null);
   const [loadingDraft, setLoadingDraft] = useState(false);
+  const [gameOutcome, setGameOutcome] = useState<
+    "victory" | "defeat" | "unknown"
+  >("unknown");
 
   // Tagging related state
   const [tags, setTags] = useState<string[]>([]);
@@ -32,7 +35,7 @@ export default function NewNotePage() {
     details?: string;
   } | null>(null);
 
-  // Auto-populate matchup when draft analysis completes
+  // Auto-populate matchup and game outcome when draft analysis completes
   useEffect(() => {
     if (draftResult?.me) {
       const { champion, role, opponentChampion } = draftResult.me;
@@ -45,6 +48,11 @@ export default function NewNotePage() {
       }
 
       setMatchup(matchupText);
+    }
+
+    // Set game outcome from draft analysis if available
+    if (draftResult?.gameOutcome) {
+      setGameOutcome(draftResult.gameOutcome);
     }
   }, [draftResult]);
 
@@ -115,8 +123,16 @@ export default function NewNotePage() {
       return;
     }
 
-    // Combine all fields into note text for backend
+    // Combine all fields into note text for backend (backup/legacy)
     const noteText = `${matchup}\n\nWhat went well:\n${whatWentWell}\n\nWhat went poorly:\n${whatWentPoorly}`;
+
+    // Prepare structured data
+    const structured = {
+      matchup: matchup.trim() || undefined,
+      positive: whatWentWell.trim() || undefined,
+      improvements: whatWentPoorly.trim() || undefined,
+      gameOutcome,
+    };
 
     try {
       const res = await fetch("/api/notes", {
@@ -129,6 +145,7 @@ export default function NewNotePage() {
           draft: draftResult,
           summonerName: username || "",
           tags,
+          structured,
         }),
       });
 
@@ -152,6 +169,7 @@ export default function NewNotePage() {
       setImageFile(null);
       setDraftResult(null);
       setTags([]);
+      setGameOutcome("unknown");
       setError(null);
 
       alert("Note saved successfully!");
@@ -234,43 +252,43 @@ export default function NewNotePage() {
 
       {/* Step Flow Indicator */}
       {/* TODO make this into a better solution, some sort of state-checker for steps instead of individual booleans? */}
-      <div className="bg-gradient-to-r from-[var(--sage-light)] to-[var(--sage-medium)] rounded-lg p-6 mb-6">
+      <div className="bg-gradient-to-r from-[var(--sage-light)] to-[var(--sage-medium)] rounded-lg p-6 mb-6 border-2 border-[var(--border)]">
         <div className="flex items-center justify-between text-sm">
           <div
-            className={`flex items-center gap-2 ${hasImage ? "text-white font-semibold" : "text-[var(--sage-dark)]"}`}
+            className={`flex items-center gap-2 ${hasImage ? "text-[var(--foreground)] font-semibold" : "text-[var(--text-muted)]"}`}
           >
             <span
-              className={`w-8 h-8 rounded-full flex items-center justify-center ${hasImage ? "bg-white text-[var(--sage-dark]" : "bg-[var(--sage-dark)] text-[var(--background)]"}`}
+              className={`w-8 h-8 rounded-full flex items-center justify-center ${hasImage ? "bg-[var(--sage-dark)] text-white" : "bg-[var(--background)] text-[var(--sage-dark)] border-2 border-[var(--sage-dark)]"}`}
             >
               1
             </span>
             <span>Upload Image</span>
           </div>
-          <div className="flex-1 h-1 bg-white/30 mx-4"></div>
+          <div className="flex-1 h-1 bg-[var(--border)] mx-4"></div>
           <div
-            className={`flex items-center gap-2 ${hasAnalysis ? "text-white font-semibold" : "text-[var(--sage-dark)]"}`}
+            className={`flex items-center gap-2 ${hasAnalysis ? "text-[var(--foreground)] font-semibold" : "text-[var(--text-muted)]"}`}
           >
             <span
-              className={`w-8 h-8 rounded-full flex items-center justify-center ${hasAnalysis ? "bg-white text-[var(--sage-dark)]" : "bg-[var(--sage-dark)] text-[var(--background)]"}`}
+              className={`w-8 h-8 rounded-full flex items-center justify-center ${hasAnalysis ? "bg-[var(--sage-dark)] text-white" : "bg-[var(--background)] text-[var(--sage-dark)] border-2 border-[var(--sage-dark)]"}`}
             >
               2
             </span>
             <span>Analyze & Write</span>
           </div>
-          <div className="flex-1 h-1 bg-white/30 mx-4"></div>
+          <div className="flex-1 h-1 bg-[var(--border)] mx-4"></div>
           <div
-            className={`flex items-center gap-2 ${tags.length > 0 ? "text-white font-semibold" : "text-[var(--sage-dark)]"}`}
+            className={`flex items-center gap-2 ${tags.length > 0 ? "text-[var(--foreground)] font-semibold" : "text-[var(--text-muted)]"}`}
           >
             <span
-              className={`w-8 h-8 rounded-full flex items-center justify-center ${tags.length > 0 ? "bg-white text-[var(--sage-dark)]" : "bg-[var(--sage-dark)] text-[var(--background)]"}`}
+              className={`w-8 h-8 rounded-full flex items-center justify-center ${tags.length > 0 ? "bg-[var(--sage-dark)] text-white" : "bg-[var(--background)] text-[var(--sage-dark)] border-2 border-[var(--sage-dark)]"}`}
             >
               3
             </span>
             <span>Tag Notes</span>
           </div>
-          <div className="flex-1 h-1 bg-white/30 mx-4"></div>
-          <div className="flex items-center gap-2 text-[var(--sage-dark)]">
-            <span className="w-8 h-8 rounded-full flex items-center justify-center bg-[var(--sage-dark)] text-[var(--background)]">
+          <div className="flex-1 h-1 bg-[var(--border)] mx-4"></div>
+          <div className="flex items-center gap-2 text-[var(--text-muted)]">
+            <span className="w-8 h-8 rounded-full flex items-center justify-center bg-[var(--background)] text-[var(--sage-dark)] border-2 border-[var(--sage-dark)]">
               4
             </span>
             <span>Save Note</span>
@@ -295,7 +313,7 @@ export default function NewNotePage() {
             <input
               type="text"
               placeholder="Enter your summoner name"
-              className="w-full border-2 border-[var(--border)] rounded-lg p-3 bg-[var(--card-bg)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all"
+              className="w-full border-2 border-[var(--border)] rounded-lg p-3 bg-[var(--card-bg)] text-[var(--foreground)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
             />
@@ -303,14 +321,14 @@ export default function NewNotePage() {
 
           <div>
             <label className="block text-sm font-medium text-[var(--sage-dark)] mb-2">
-              Draft/Lobby Screenshot <span className="text-red-500">*</span>
+              Draft/Lobby Screenshot <span className="text-red-500 dark:text-red-400">*</span>
             </label>
             <div className="relative">
               <input
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}
-                className="w-full border-2 border-dashed border-[var(--sage-light)] rounded-lg p-4 bg-[var(--sage-light)]/20 focus:outline-none focus:ring-2 focus:ring-[var(--sage-medium)] focus:border-transparent transition-all cursor-pointer hover:border-[var(--sage-medium)]"
+                className="w-full border-2 border-dashed border-[var(--sage-light)] rounded-lg p-4 bg-[var(--sage-light)]/20 text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--sage-medium)] focus:border-transparent transition-all cursor-pointer hover:border-[var(--sage-medium)]"
               />
             </div>
             {imageFile && (
@@ -324,7 +342,7 @@ export default function NewNotePage() {
           <button
             disabled={!imageFile || loadingDraft}
             onClick={handleAnalyzeImage}
-            className="w-full bg-[var(--sage-medium)] text-white px-6 py-3 rounded-lg hover:bg-[var(--sage-dark)] transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+            className="w-full bg-[var(--sage-medium)] hover:bg-[var(--sage-dark)] text-white px-6 py-3 rounded-lg transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
           >
             {loadingDraft ? (
               <span className="flex items-center justify-center gap-2">
@@ -376,10 +394,55 @@ export default function NewNotePage() {
             <input
               type="text"
               placeholder="e.g., Ahri (Mid) vs Zed"
-              className="w-full border-2 border-[var(--border)] rounded-lg p-3 bg-[var(--card-bg)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all text-lg"
+              className="w-full border-2 border-[var(--border)] rounded-lg p-3 bg-[var(--card-bg)] text-[var(--foreground)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all text-lg"
               value={matchup}
               onChange={(e) => setMatchup(e.target.value)}
             />
+          </div>
+
+          {/* Game Outcome Selector */}
+          <div>
+            <label className="block text-sm font-medium text-[var(--sage-dark)] mb-2">
+              Game Outcome{" "}
+              <span className="text-xs text-[var(--text-muted)]">
+                (Auto-detected from image)
+              </span>
+            </label>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setGameOutcome("victory")}
+                className={`flex-1 px-4 py-3 rounded-lg font-semibold transition-all border-2 ${
+                  gameOutcome === "victory"
+                    ? "bg-[var(--sage-medium)] text-white border-[var(--sage-dark)] shadow-md"
+                    : "bg-[var(--card-bg)] text-[var(--foreground)] border-[var(--border)] hover:border-[var(--sage-medium)]"
+                }`}
+              >
+                Victory
+              </button>
+              <button
+                type="button"
+                onClick={() => setGameOutcome("defeat")}
+                className={`flex-1 px-4 py-3 rounded-lg font-semibold transition-all border-2 ${
+                  gameOutcome === "defeat"
+                    ? "bg-rose-500 text-white border-rose-600 shadow-md"
+                    : "bg-[var(--card-bg)] text-[var(--foreground)] border-[var(--border)] hover:border-rose-400"
+                }`}
+              >
+                Defeat
+              </button>
+              <button
+                type="button"
+                onClick={() => setGameOutcome("unknown")}
+                className={`flex-1 px-4 py-3 rounded-lg font-semibold transition-all border-2 ${
+                  gameOutcome === "unknown"
+                    ? "bg-gray-500 text-white border-gray-600 shadow-md"
+                    : "bg-[var(--card-bg)] text-[var(--foreground)] border-[var(--border)] hover:border-gray-400"
+                }`}
+              >
+                Unknown
+              </button>
+            </div>
           </div>
 
           {/* What Went Well */}
@@ -397,7 +460,7 @@ Examples:
 - Successfully dodged key abilities
 - Made good roam plays
 - Won teamfights with good positioning"
-              className="w-full border-2 border-[var(--border)] rounded-lg p-4 bg-[var(--card-bg)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all resize-none text-base leading-relaxed"
+              className="w-full border-2 border-[var(--border)] rounded-lg p-4 bg-[var(--card-bg)] text-[var(--foreground)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all resize-none text-base leading-relaxed"
               value={whatWentWell}
               onChange={(e) => setWhatWentWell(e.target.value)}
               rows={6}
@@ -422,7 +485,7 @@ Examples:
 - Missed farm opportunities
 - Poor map awareness - didn't see ganks
 - Bad positioning in teamfights"
-              className="w-full border-2 border-[var(--border)] rounded-lg p-4 bg-[var(--card-bg)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all resize-none text-base leading-relaxed"
+              className="w-full border-2 border-[var(--border)] rounded-lg p-4 bg-[var(--card-bg)] text-[var(--foreground)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all resize-none text-base leading-relaxed"
               value={whatWentPoorly}
               onChange={(e) => setWhatWentPoorly(e.target.value)}
               rows={6}
@@ -506,7 +569,7 @@ Examples:
 
         <button
           onClick={handleSubmit}
-          className="w-full bg-[var(--sage-dark)] text-white px-6 py-4 rounded-lg hover:bg-[var(--sage-medium)] transition-colors font-bold text-lg shadow-lg"
+          className="w-full bg-[var(--sage-dark)] hover:bg-[var(--sage-medium)] text-white px-6 py-4 rounded-lg transition-colors font-bold text-lg shadow-lg"
         >
           Save Game Note
         </button>

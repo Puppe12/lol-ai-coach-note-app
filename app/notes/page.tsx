@@ -6,31 +6,11 @@ import GoalsDisplay from "@/app/components/GoalsDisplay";
 import NoteCard from "@/app/components/NoteCard";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-
-type DraftData = {
-  champion?: string;
-  role?: string;
-  opponentChampion?: string;
-  me?: {
-    champion?: string;
-    role?: string;
-    opponentChampion?: string;
-  };
-};
-
-type Note = {
-  _id: string;
-  text: string;
-  createdAt?: string | Date;
-  draft?: DraftData;
-  summonerName?: string;
-  ai?: {
-    tags?: string[];
-    embedding?: number[];
-  };
-};
+import { SegmentedControl, Pagination, Button, Group, Accordion, Text, Stack } from "@mantine/core";
+import type { Note } from "@/app/types/note";
 
 type DateFilter = "all" | "today" | "thisWeek" | "thisMonth";
+type OutcomeFilter = "all" | "victory" | "defeat";
 
 export default function NotesPage() {
   const router = useRouter();
@@ -39,39 +19,56 @@ export default function NotesPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
+  const [outcomeFilter, setOutcomeFilter] = useState<OutcomeFilter>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const notesPerPage = 10;
 
   const [goals, setGoals] = useState<any>(null);
   const [loadingGoals, setLoadingGoals] = useState(false);
 
-  // Filter notes by date
+  const [summary, setSummary] = useState<any>(null);
+  const [loadingSummary, setLoadingSummary] = useState(false);
+
+  // Filter notes by date and outcome
   const filteredNotes = useMemo(() => {
-    if (dateFilter === "all") return notes;
+    let filtered = notes;
 
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay()); // Sunday
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    // Date filter
+    if (dateFilter !== "all") {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const startOfWeek = new Date(today);
+      startOfWeek.setDate(today.getDate() - today.getDay()); // Sunday
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    return notes.filter((note) => {
-      if (!note.createdAt) return false;
-      const noteDate = new Date(note.createdAt);
-      if (isNaN(noteDate.getTime())) return false;
+      filtered = filtered.filter((note) => {
+        if (!note.createdAt) return false;
+        const noteDate = new Date(note.createdAt);
+        if (isNaN(noteDate.getTime())) return false;
 
-      switch (dateFilter) {
-        case "today":
-          return noteDate >= today;
-        case "thisWeek":
-          return noteDate >= startOfWeek;
-        case "thisMonth":
-          return noteDate >= startOfMonth;
-        default:
-          return true;
-      }
-    });
-  }, [notes, dateFilter]);
+        switch (dateFilter) {
+          case "today":
+            return noteDate >= today;
+          case "thisWeek":
+            return noteDate >= startOfWeek;
+          case "thisMonth":
+            return noteDate >= startOfMonth;
+          default:
+            return true;
+        }
+      });
+    }
+
+    // Outcome filter
+    if (outcomeFilter !== "all") {
+      filtered = filtered.filter((note) => {
+        const outcome = note.structured?.gameOutcome || note.draft?.gameOutcome;
+        return outcome === outcomeFilter;
+      });
+    }
+
+    return filtered;
+  }, [notes, dateFilter, outcomeFilter]);
 
   // Paginate filtered notes
   const paginatedNotes = useMemo(() => {
@@ -85,7 +82,7 @@ export default function NotesPage() {
   // Reset to page 1 when filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [dateFilter]);
+  }, [dateFilter, outcomeFilter]);
 
   async function generateGoals() {
     setLoadingGoals(true);
@@ -110,6 +107,37 @@ export default function NotesPage() {
       alert("Failed to generate goals");
     } finally {
       setLoadingGoals(false);
+    }
+  }
+
+  async function summarizeNotes() {
+    if (filteredNotes.length === 0) return;
+
+    setLoadingSummary(true);
+    try {
+      const noteIds = filteredNotes.map((note) => note._id);
+
+      const res = await fetch("/api/notes/summarize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ noteIds }),
+      });
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          window.location.href = "/login";
+          return;
+        }
+        throw new Error("Failed to summarize notes");
+      }
+
+      const data = await res.json();
+      setSummary(data.summary);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to summarize notes");
+    } finally {
+      setLoadingSummary(false);
     }
   }
 
@@ -147,6 +175,22 @@ export default function NotesPage() {
   };
 
   const renderPagination = () => {
+    if (totalPages <= 1) return null;
+
+    return (
+      <div className="mt-6 flex justify-center">
+        <Pagination
+          total={totalPages}
+          value={currentPage}
+          onChange={handlePageChange}
+          color="sageGreen"
+          size="md"
+        />
+      </div>
+    );
+  };
+
+  const renderPaginationOld = () => {
     if (totalPages <= 1) return null;
 
     const pages: (number | string)[] = [];
@@ -247,36 +291,44 @@ export default function NotesPage() {
         </Link>
       </div>
 
-      {/* Date Filter Controls */}
-      <div className="mb-6 flex flex-wrap items-center gap-3">
-        <span className="text-sm font-medium text-[var(--sage-dark)]">
-          Filter by date:
-        </span>
-        <div className="flex flex-wrap gap-2">
-          {(
-            [
-              { value: "all", label: "All Time" },
-              { value: "today", label: "Today" },
-              { value: "thisWeek", label: "This Week" },
-              { value: "thisMonth", label: "This Month" },
-            ] as const
-          ).map((filter) => (
-            <button
-              key={filter.value}
-              onClick={() => setDateFilter(filter.value)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                dateFilter === filter.value
-                  ? "bg-[var(--sage-medium)] text-white"
-                  : "bg-[var(--card-bg)] border border-[var(--border)] text-[var(--foreground)] hover:bg-[var(--sage-light)]"
-              }`}
-            >
-              {filter.label}
-            </button>
-          ))}
+      {/* Filter Controls */}
+      <div className="mb-6 space-y-4">
+        <div>
+          <Text size="sm" fw={500} c="sageGreen.8" mb="xs">
+            Filter by date:
+          </Text>
+          <SegmentedControl
+            value={dateFilter}
+            onChange={(value) => setDateFilter(value as DateFilter)}
+            data={[
+              { label: "All Time", value: "all" },
+              { label: "Today", value: "today" },
+              { label: "This Week", value: "thisWeek" },
+              { label: "This Month", value: "thisMonth" },
+            ]}
+            color="sageGreen"
+          />
         </div>
-        <span className="text-sm text-[var(--text-muted)] ml-auto">
-          {filteredNotes.length} note{filteredNotes.length !== 1 ? "s" : ""}
-        </span>
+
+        <div>
+          <Text size="sm" fw={500} c="sageGreen.8" mb="xs">
+            Filter by outcome:
+          </Text>
+          <SegmentedControl
+            value={outcomeFilter}
+            onChange={(value) => setOutcomeFilter(value as OutcomeFilter)}
+            data={[
+              { label: "All Games", value: "all" },
+              { label: "Victories", value: "victory" },
+              { label: "Defeats", value: "defeat" },
+            ]}
+            color="sageGreen"
+          />
+        </div>
+
+        <Text size="sm" c="dimmed">
+          {filteredNotes.length} note{filteredNotes.length !== 1 ? "s" : ""} found
+        </Text>
       </div>
 
       {/* Loading State */}
@@ -325,22 +377,88 @@ export default function NotesPage() {
       {renderPagination()}
 
       {/* Action Buttons */}
-      <div className="mt-8 flex gap-3 flex-wrap">
-        <button
-          onClick={loadNotes}
-          className="bg-[var(--sage-light)] text-[var(--sage-dark)] px-4 py-2 rounded-lg hover:bg-[var(--sage-medium)] hover:text-white transition-colors font-medium"
-        >
+      <Group mt="xl" gap="md">
+        <Button onClick={loadNotes} variant="light" color="sageGreen">
           Refresh
-        </button>
+        </Button>
 
-        <button
+        <Button
+          onClick={summarizeNotes}
+          disabled={loadingSummary || filteredNotes.length === 0}
+          color="sageGreen"
+          variant="light"
+          loading={loadingSummary}
+        >
+          Summarize Visible Notes
+        </Button>
+
+        <Button
           onClick={generateGoals}
           disabled={loadingGoals || filteredNotes.length === 0}
-          className="bg-[var(--sage-medium)] text-white px-4 py-2 rounded-lg hover:bg-[var(--sage-dark)] transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          color="sageGreen"
+          loading={loadingGoals}
         >
-          {loadingGoals ? "Generating..." : "Generate Goals"}
-        </button>
-      </div>
+          Generate Goals
+        </Button>
+      </Group>
+
+      {/* Summary Display */}
+      {summary && (
+        <Accordion mt="xl" variant="separated" radius="md">
+          <Accordion.Item value="summary">
+            <Accordion.Control>
+              <Text fw={600} size="lg" c="sageGreen.8">
+                AI Summary of {filteredNotes.length} Notes
+              </Text>
+            </Accordion.Control>
+            <Accordion.Panel>
+              <Stack gap="md">
+                <div>
+                  <Group gap="xs" mb="xs">
+                    <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
+                    <Text fw={600} size="sm" tt="uppercase" c="sageGreen.8">
+                      Common Positive Patterns
+                    </Text>
+                  </Group>
+                  <div className="bg-emerald-50/50 dark:bg-green-900/20 border border-emerald-200/60 dark:border-green-800 rounded-lg p-4">
+                    <Text size="sm" style={{ whiteSpace: "pre-wrap" }}>
+                      {summary.positivePatterns}
+                    </Text>
+                  </div>
+                </div>
+
+                <div>
+                  <Group gap="xs" mb="xs">
+                    <div className="w-2 h-2 rounded-full bg-rose-400"></div>
+                    <Text fw={600} size="sm" tt="uppercase" c="sageGreen.8">
+                      Common Areas for Improvement
+                    </Text>
+                  </Group>
+                  <div className="bg-rose-50/50 dark:bg-red-900/20 border border-rose-200/60 dark:border-red-800 rounded-lg p-4">
+                    <Text size="sm" style={{ whiteSpace: "pre-wrap" }}>
+                      {summary.improvementAreas}
+                    </Text>
+                  </div>
+                </div>
+
+                <div>
+                  <Group gap="xs" mb="xs">
+                    <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+                    <Text fw={600} size="sm" tt="uppercase" c="sageGreen.8">
+                      Key Recurring Themes
+                    </Text>
+                  </Group>
+                  <div className="bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200/60 dark:border-blue-800 rounded-lg p-4">
+                    <Text size="sm" style={{ whiteSpace: "pre-wrap" }}>
+                      {summary.keyThemes}
+                    </Text>
+                  </div>
+                </div>
+              </Stack>
+            </Accordion.Panel>
+          </Accordion.Item>
+        </Accordion>
+      )}
 
       {/* Goals Display */}
       {goals && <GoalsDisplay data={goals} />}
