@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 const PUBLIC_PATHS = ["/", "/login"];
 
 // Protect all app pages by default (except PUBLIC_PATHS). Exclude static assets and API routes.
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
 
   // Allow public paths to continue
@@ -41,6 +41,7 @@ export function middleware(req: NextRequest) {
 
 // Apply to all routes except static assets and API endpoints
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|api).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|api).*)",
+  ],
 };
-

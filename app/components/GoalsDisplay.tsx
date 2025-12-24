@@ -23,7 +23,7 @@ export default function GoalsDisplay({ data }: GoalsDisplayProps) {
   }
 
   return (
-    <div className="mt-4 p-6 bg-white border border-[var(--sage-light)] rounded-lg shadow-sm">
+    <div className="mt-4 p-6 bg-[var(--card-bg)] border border-[var(--border)] rounded-lg shadow-sm">
       <h2 className="font-bold text-lg text-[var(--sage-dark)] mb-6">
         GOALS & TRAINING PLAN
       </h2>

@@ -7,7 +7,7 @@
   --sage-medium: #a1bc98;
   --sage-dark: #778873;
 
-  /* Theme colors */
+  /* Light Theme colors */
   --background: var(--sage-cream);
   --foreground: var(--sage-dark);
   --primary: var(--sage-medium);
@@ -16,6 +16,34 @@
   --border: var(--sage-light);
   --card-bg: #ffffff;
   --text-muted: #6b7a6a;
+
+  /* Error colors for light mode */
+  --error-text: #dc2626;
+  --error-bg: #fef2f2;
+  --error-border: #fecaca;
+}
+
+/* Dark Theme - High contrast black/gray/white for accessibility */
+[data-theme="dark"] {
+  --background: #1a1a1a;
+  --foreground: #ffffff;
+  --primary: #4a4a4a;
+  --primary-dark: #2a2a2a;
+  --secondary: #3a3a3a;
+  --border: #4a4a4a;
+  --card-bg: #2a2a2a;
+  --text-muted: #a0a0a0;
+
+  /* Override sage colors for dark mode */
+  --sage-cream: #1a1a1a;
+  --sage-light: #3a3a3a;
+  --sage-medium: #4a4a4a;
+  --sage-dark: #ffffff;
+
+  /* Error colors for dark mode */
+  --error-text: #fca5a5;
+  --error-bg: #7f1d1d;
+  --error-border: #991b1b;
 }
 
 @theme inline {
@@ -35,4 +63,7 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
