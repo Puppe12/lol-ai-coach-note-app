@@ -44,6 +44,10 @@ Tasks:
    - champion
    - likely role if visible or inferable
    - direct lane opponent if visible
+5. IMPORTANT: Detect the game outcome (Victory or Defeat):
+   - Look for "Victory" or "Defeat" banners/text in the image
+   - Check team colors and UI indicators
+   - If unclear or not visible, return "unknown"
 
 If something is unclear, use "unknown". Do NOT guess.
 
@@ -58,7 +62,8 @@ Output STRICT JSON in this exact shape:
   "teams": {
     "allies": [],
     "enemies": []
-  }
+  },
+  "gameOutcome": "victory" | "defeat" | "unknown"
 }
 `;
 

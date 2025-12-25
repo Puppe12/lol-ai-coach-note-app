@@ -17,17 +17,19 @@ export default function Home() {
             Welcome to LoL Coach
           </h1>
           <p className="max-w-md text-lg leading-8 text-[var(--text-muted)]">
-            Track your League of Legends progress with notes and insights.{" "}
+            Track your League of Legends progress with notes and insights. NOTE:
+            PLEASE DO NOT USE PERSONAL INFORMATION (such as emails, names other
+            than your ingame-name) AS THERE IS NO STRONG AUTH YET{" "}
             <a
               href="/notes"
-              className="font-medium text-[var(--sage-dark)] hover:text-[var(--sage-medium)] transition-colors"
+              className="font-medium text-[var(--sage-light)] hover:text-[var(--sage-medium)] transition-colors"
             >
               View your notes
             </a>{" "}
             or{" "}
             <a
               href="/new-note"
-              className="font-medium text-[var(--sage-dark)] hover:text-[var(--sage-medium)] transition-colors"
+              className="font-medium text-[var(--sage-light)] hover:text-[var(--sage-medium)] transition-colors"
             >
               create a new one
             </a>
@@ -42,7 +44,7 @@ export default function Home() {
             New Note
           </a>
           <a
-            className="flex h-12 w-full items-center justify-center rounded-lg border border-[var(--sage-light)] px-5 transition-colors hover:bg-[var(--sage-light)] hover:border-[var(--sage-medium)] md:w-[158px] text-[var(--sage-dark)]"
+            className="flex h-12 w-full items-center justify-center rounded-lg border border-[var(--sage-light)] px-5 transition-colors hover:bg-[var(--sage-light)] hover:border-[var(--sage-medium)] md:w-[158px] text-[var(--sage-light)]"
             href="/notes"
           >
             View Notes

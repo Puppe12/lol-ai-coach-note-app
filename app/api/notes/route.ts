@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { getUserId } from "@/lib/session";
 import OpenAI from "openai";
+import type { StructuredNoteData } from "@/app/types/note";
 
 const embeddingModel = process.env.AZURE_OPENAI_EMBEDDINGS!;
 const GPTMiniModel = process.env.AZURE_OPENAI_GPT4O_MINI!;
@@ -34,10 +35,13 @@ export async function POST(req: Request) {
       );
     }
 
-    const { text, draft, summonerName } = await req.json();
+    const { text, draft, summonerName, structured } = await req.json();
 
-    if (!text) {
-      return NextResponse.json({ error: "Text is required" }, { status: 400 });
+    if (!text && !structured) {
+      return NextResponse.json(
+        { error: "Text or structured data is required" },
+        { status: 400 }
+      );
     }
 
     // 1) Auto-tag
@@ -63,10 +67,14 @@ export async function POST(req: Request) {
     const tagJson = JSON.parse(content);
     const tags = tagJson.tags || [];
 
-    // 2) Create embedding
+    // 2) Create embedding from combined content
+    const embeddingText = structured
+      ? `${structured.matchup || ""} ${structured.positive || ""} ${structured.improvements || ""}`.trim()
+      : text;
+
     const embed = await embedClient.embeddings.create({
       model: embeddingModel,
-      input: text,
+      input: embeddingText || text,
     });
 
     const vector = embed.data[0].embedding;
@@ -78,7 +86,7 @@ export async function POST(req: Request) {
     // Debug: Log database name
     console.log("Saving to database:", db.databaseName);
 
-    const result = await db.collection("notes").insertOne({
+    const noteDocument: any = {
       text,
       draft,
       summonerName,
@@ -88,7 +96,14 @@ export async function POST(req: Request) {
         embedding: vector,
       },
       createdAt: new Date(),
-    });
+    };
+
+    // Add structured data if provided
+    if (structured) {
+      noteDocument.structured = structured;
+    }
+
+    const result = await db.collection("notes").insertOne(noteDocument);
 
     return NextResponse.json({ ok: true, id: result.insertedId, tags });
   } catch (err: any) {

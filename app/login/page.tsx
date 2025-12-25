@@ -61,7 +61,7 @@ export default function LoginPage() {
 
   return (
     <div className="max-w-md mx-auto p-6 mt-20">
-      <div className="bg-white border border-[var(--sage-light)] rounded-lg shadow-sm p-8">
+      <div className="bg-[var(--card-bg)] border border-[var(--border)] rounded-lg shadow-sm p-8">
         <h1 className="text-2xl font-bold text-[var(--sage-dark)] mb-6">
           Login to LoL Coach
         </h1>
@@ -80,14 +80,14 @@ export default function LoginPage() {
               value={userId}
               onChange={(e) => setUserId(e.target.value)}
               placeholder="Enter your username or email"
-              className="w-full border border-[var(--sage-light)] rounded-lg p-3 bg-white focus:outline-none focus:ring-2 focus:ring-[var(--sage-medium)] focus:border-transparent transition-all"
+              className="w-full border border-[var(--border)] rounded-lg p-3 bg-[var(--card-bg)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all"
               disabled={loading}
               autoFocus
             />
           </div>
 
           {error && (
-            <p className="text-red-600 text-sm bg-red-50 p-3 rounded-lg">
+            <p className="text-[var(--error-text)] text-sm bg-[var(--error-bg)] p-3 rounded-lg border border-[var(--error-border)]">
               {error}
             </p>
           )}
