@@ -6,7 +6,15 @@ import GoalsDisplay from "@/app/components/GoalsDisplay";
 import NoteCard from "@/app/components/NoteCard";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import { SegmentedControl, Pagination, Button, Group, Accordion, Text, Stack } from "@mantine/core";
+import {
+  SegmentedControl,
+  Pagination,
+  Button,
+  Group,
+  Accordion,
+  Text,
+  Stack,
+} from "@mantine/core";
 import type { Note } from "@/app/types/note";
 
 type DateFilter = "all" | "today" | "thisWeek" | "thisMonth";
@@ -327,7 +335,8 @@ export default function NotesPage() {
         </div>
 
         <Text size="sm" c="dimmed">
-          {filteredNotes.length} note{filteredNotes.length !== 1 ? "s" : ""} found
+          {filteredNotes.length} note{filteredNotes.length !== 1 ? "s" : ""}{" "}
+          found
         </Text>
       </div>
 
@@ -413,47 +422,53 @@ export default function NotesPage() {
             </Accordion.Control>
             <Accordion.Panel>
               <Stack gap="md">
-                <div>
-                  <Group gap="xs" mb="xs">
-                    <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
-                    <Text fw={600} size="sm" tt="uppercase" c="sageGreen.8">
-                      Common Positive Patterns
-                    </Text>
-                  </Group>
-                  <div className="bg-emerald-50/50 dark:bg-green-900/20 border border-emerald-200/60 dark:border-green-800 rounded-lg p-4">
-                    <Text size="sm" style={{ whiteSpace: "pre-wrap" }}>
-                      {summary.positivePatterns}
-                    </Text>
+                {summary.overallSummary && (
+                  <div>
+                    <Group gap="xs" mb="xs">
+                      <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+                      <Text fw={600} size="sm" tt="uppercase" c="sageGreen.8">
+                        Overall Summary
+                      </Text>
+                    </Group>
+                    <div className="bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200/60 dark:border-blue-800 rounded-lg p-4">
+                      <Text size="sm" style={{ whiteSpace: "pre-wrap" }}>
+                        {summary.overallSummary}
+                      </Text>
+                    </div>
                   </div>
-                </div>
+                )}
 
-                <div>
-                  <Group gap="xs" mb="xs">
-                    <div className="w-2 h-2 rounded-full bg-rose-400"></div>
-                    <Text fw={600} size="sm" tt="uppercase" c="sageGreen.8">
-                      Common Areas for Improvement
-                    </Text>
-                  </Group>
-                  <div className="bg-rose-50/50 dark:bg-red-900/20 border border-rose-200/60 dark:border-red-800 rounded-lg p-4">
-                    <Text size="sm" style={{ whiteSpace: "pre-wrap" }}>
-                      {summary.improvementAreas}
-                    </Text>
+                {summary.positives && (
+                  <div>
+                    <Group gap="xs" mb="xs">
+                      <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
+                      <Text fw={600} size="sm" tt="uppercase" c="sageGreen.8">
+                        What Went Well
+                      </Text>
+                    </Group>
+                    <div className="bg-emerald-50/50 dark:bg-green-900/20 border border-emerald-200/60 dark:border-green-800 rounded-lg p-4">
+                      <Text size="sm" style={{ whiteSpace: "pre-wrap" }}>
+                        {summary.positives}
+                      </Text>
+                    </div>
                   </div>
-                </div>
+                )}
 
-                <div>
-                  <Group gap="xs" mb="xs">
-                    <div className="w-2 h-2 rounded-full bg-blue-400"></div>
-                    <Text fw={600} size="sm" tt="uppercase" c="sageGreen.8">
-                      Key Recurring Themes
-                    </Text>
-                  </Group>
-                  <div className="bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200/60 dark:border-blue-800 rounded-lg p-4">
-                    <Text size="sm" style={{ whiteSpace: "pre-wrap" }}>
-                      {summary.keyThemes}
-                    </Text>
+                {summary.improvements && (
+                  <div>
+                    <Group gap="xs" mb="xs">
+                      <div className="w-2 h-2 rounded-full bg-rose-400"></div>
+                      <Text fw={600} size="sm" tt="uppercase" c="sageGreen.8">
+                        Areas for Improvement
+                      </Text>
+                    </Group>
+                    <div className="bg-rose-50/50 dark:bg-red-900/20 border border-rose-200/60 dark:border-red-800 rounded-lg p-4">
+                      <Text size="sm" style={{ whiteSpace: "pre-wrap" }}>
+                        {summary.improvements}
+                      </Text>
+                    </div>
                   </div>
-                </div>
+                )}
               </Stack>
             </Accordion.Panel>
           </Accordion.Item>

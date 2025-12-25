@@ -255,43 +255,43 @@ export default function NewNotePage() {
       <div className="bg-gradient-to-r from-[var(--sage-light)] to-[var(--sage-medium)] rounded-lg p-6 mb-6 border-2 border-[var(--border)]">
         <div className="flex items-center justify-between text-sm">
           <div
-            className={`flex items-center gap-2 ${hasImage ? "text-[var(--foreground)] font-semibold" : "text-[var(--text-muted)]"}`}
+            className={`flex items-center gap-2 ${hasImage ? "step-text font-semibold" : "text-[var(--text-muted)]"}`}
           >
             <span
-              className={`w-8 h-8 rounded-full flex items-center justify-center ${hasImage ? "bg-[var(--sage-dark)] text-white" : "bg-[var(--background)] text-[var(--sage-dark)] border-2 border-[var(--sage-dark)]"}`}
+              className={`w-8 h-8 rounded-full flex items-center justify-center ${hasImage ? "step-circle-active text-white" : "step-circle-bg step-text border-2 border-[var(--sage-dark)]"}`}
             >
               1
             </span>
-            <span>Upload Image</span>
+            <span className="text-[var(--step-text)]">Upload Image</span>
           </div>
           <div className="flex-1 h-1 bg-[var(--border)] mx-4"></div>
           <div
-            className={`flex items-center gap-2 ${hasAnalysis ? "text-[var(--foreground)] font-semibold" : "text-[var(--text-muted)]"}`}
+            className={`flex items-center gap-2 ${hasAnalysis ? "step-text font-semibold" : "text-[var(--text-muted)]"}`}
           >
             <span
-              className={`w-8 h-8 rounded-full flex items-center justify-center ${hasAnalysis ? "bg-[var(--sage-dark)] text-white" : "bg-[var(--background)] text-[var(--sage-dark)] border-2 border-[var(--sage-dark)]"}`}
+              className={`w-8 h-8 rounded-full flex items-center justify-center ${hasAnalysis ? "step-circle-active text-white" : "step-circle-bg step-text border-2 border-[var(--sage-dark)]"}`}
             >
               2
             </span>
-            <span>Analyze & Write</span>
+            <span className="text-[var(--step-text)]">Analyze & Write</span>
           </div>
           <div className="flex-1 h-1 bg-[var(--border)] mx-4"></div>
           <div
-            className={`flex items-center gap-2 ${tags.length > 0 ? "text-[var(--foreground)] font-semibold" : "text-[var(--text-muted)]"}`}
+            className={`flex items-center gap-2 ${tags.length > 0 ? "step-text font-semibold" : "text-[var(--text-muted)]"}`}
           >
             <span
-              className={`w-8 h-8 rounded-full flex items-center justify-center ${tags.length > 0 ? "bg-[var(--sage-dark)] text-white" : "bg-[var(--background)] text-[var(--sage-dark)] border-2 border-[var(--sage-dark)]"}`}
+              className={`w-8 h-8 rounded-full flex items-center justify-center ${tags.length > 0 ? "step-circle-active text-white" : "step-circle-bg step-text border-2 border-[var(--sage-dark)]"}`}
             >
               3
             </span>
-            <span>Tag Notes</span>
+            <span className="text-[var(--step-text)]">Tag Notes</span>
           </div>
           <div className="flex-1 h-1 bg-[var(--border)] mx-4"></div>
           <div className="flex items-center gap-2 text-[var(--text-muted)]">
-            <span className="w-8 h-8 rounded-full flex items-center justify-center bg-[var(--background)] text-[var(--sage-dark)] border-2 border-[var(--sage-dark)]">
+            <span className="w-8 h-8 rounded-full flex items-center justify-center step-circle-bg step-text border-2 border-[var(--sage-dark)]">
               4
             </span>
-            <span>Save Note</span>
+            <span className="text-[var(--step-text)]">Save Note</span>
           </div>
         </div>
       </div>
@@ -321,7 +321,8 @@ export default function NewNotePage() {
 
           <div>
             <label className="block text-sm font-medium text-[var(--sage-dark)] mb-2">
-              Draft/Lobby Screenshot <span className="text-red-500 dark:text-red-400">*</span>
+              Draft/Lobby Screenshot{" "}
+              <span className="text-red-500 dark:text-red-400">*</span>
             </label>
             <div className="relative">
               <input

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { getUserId } from "@/lib/session";
 import OpenAI from "openai";
+import { ObjectId } from "mongodb";
 
 const GPTMiniModel = process.env.AZURE_OPENAI_GPT4O_MINI!;
 const apiKey = process.env.AZURE_OPENAI_API_KEY!;
@@ -41,16 +42,13 @@ export async function POST(req: Request) {
     const notes = await db
       .collection("notes")
       .find({
-        _id: { $in: noteIds.map((id) => id) },
+        _id: { $in: noteIds.map((id) => new ObjectId(id)) },
         userId,
       })
       .toArray();
 
     if (notes.length === 0) {
-      return NextResponse.json(
-        { error: "No notes found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "No notes found" }, { status: 404 });
     }
 
     // Prepare notes content for summarization
@@ -69,30 +67,50 @@ Improvements: ${improvements || "N/A"}
       .join("\n\n");
 
     // Generate summary using AI
-    const prompt = `You are analyzing multiple League of Legends game notes. Provide a comprehensive summary that identifies patterns and key insights.
+    const prompt = `
+      Summarize the following gameplay notes into a clear, neutral overview.
 
-Notes to analyze:
-${notesContent}
+      Notes:
+      ${notesContent}
 
-Please provide:
-1. Common Positive Patterns: What gameplay aspects are consistently done well?
-2. Common Areas for Improvement: What mistakes or weaknesses appear repeatedly?
-3. Key Recurring Themes: What are the most important patterns across all notes?
+      Create a summary that:
+      - Combines similar observations
+      - Rephrases the notes in clearer language
+      - Reflects exactly what was written, without adding new conclusions
 
-Format your response as JSON:
-{
-  "positivePatterns": "Summary of what went well across games",
-  "improvementAreas": "Summary of common mistakes and areas to improve",
-  "keyThemes": "Key recurring themes and insights"
-}`;
+      Return JSON in this format:
+      {
+        "positives": "What the notes say went well",
+        "improvements": "What the notes say needs improvement",
+        "overallSummary": "High-level summary of the notes"
+      }
+      `;
 
     const response = await ai.chat.completions.create({
       model: GPTMiniModel,
       messages: [
         {
           role: "system",
-          content:
-            "You are a League of Legends coach analyzing gameplay notes. Provide concise, actionable insights. Output JSON only.",
+          content: `
+        You summarize existing notes only.
+        
+        Rules:
+        - Do NOT critique the quality, completeness, or amount of the notes.
+        - Do NOT mention missing information or lack of detail.
+        - Do NOT add coaching advice, goals, or recommendations.
+        - Do NOT generalize beyond what is explicitly written.
+        - Do not talk about specific character matchups unless specifically mentioned
+        
+        Your task is to:
+        - Paraphrase and condense what the notes already say
+        - Combine similar points into a clearer summary
+        - Preserve the original intent and meaning
+        
+        If something appears only once, still include it.
+        If information is sparse, mention that more data is needed but also include the summary neutrally.
+        
+        Output JSON only.
+        `,
         },
         { role: "user", content: prompt },
       ],
@@ -121,4 +139,3 @@ Format your response as JSON:
     );
   }
 }
-

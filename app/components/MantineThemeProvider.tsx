@@ -1,6 +1,10 @@
 "use client";
 
-import { MantineProvider, createTheme, MantineColorsTuple } from "@mantine/core";
+import {
+  MantineProvider,
+  createTheme,
+  MantineColorsTuple,
+} from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import { useTheme } from "@/app/contexts/ThemeContext";
 import { ReactNode } from "react";
@@ -28,6 +32,8 @@ const theme = createTheme({
   headings: {
     fontFamily: "var(--font-geist-sans), Arial, Helvetica, sans-serif",
   },
+  white: "var(--background)",
+  black: "var(--foreground)",
 });
 
 export function MantineThemeProvider({ children }: { children: ReactNode }) {
@@ -44,4 +50,3 @@ export function MantineThemeProvider({ children }: { children: ReactNode }) {
     </MantineProvider>
   );
 }
-

@@ -17,7 +17,9 @@ export default function Home() {
             Welcome to LoL Coach
           </h1>
           <p className="max-w-md text-lg leading-8 text-[var(--text-muted)]">
-            Track your League of Legends progress with notes and insights.{" "}
+            Track your League of Legends progress with notes and insights. NOTE:
+            PLEASE DO NOT USE PERSONAL INFORMATION (such as emails, names other
+            than your ingame-name) AS THERE IS NO STRONG AUTH YET{" "}
             <a
               href="/notes"
               className="font-medium text-[var(--sage-light)] hover:text-[var(--sage-medium)] transition-colors"

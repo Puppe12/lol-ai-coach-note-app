@@ -12,10 +12,16 @@
   --foreground: var(--sage-dark);
   --primary: var(--sage-medium);
   --primary-dark: var(--sage-dark);
+  --header-bg: var(--sage-medium);
   --secondary: var(--sage-light);
   --border: var(--sage-light);
   --card-bg: #ffffff;
   --text-muted: #6b7a6a;
+
+  /* Step flow circle colors */
+  --step-circle-bg: #f1f3e0;
+  --step-circle-active: var(--sage-dark);
+  --step-text: var(--sage-dark);
 
   /* Error colors for light mode */
   --error-text: #dc2626;
@@ -26,13 +32,19 @@
 /* Dark Theme - Black with sage green accents */
 [data-theme="dark"] {
   --background: #1a1a1a;
-  --foreground: #e8e8e8;
+  --foreground: #ffffff;
   --primary: #a1bc98;
-  --primary-dark: #778873;
+  --primary-dark: #606e5f;
+  --header-bg: var(--primary-dark);
   --secondary: #778873;
   --border: #3a3a3a;
   --card-bg: #252525;
   --text-muted: #b0b0b0;
+
+  /* Step flow circle colors for dark mode */
+  --step-circle-bg: #2a2a2a;
+  --step-circle-active: var(--primary-dark);
+  --step-text: #ffffff;
 
   /* Sage colors adapted for dark mode */
   --sage-cream: #1a1a1a;
@@ -46,17 +58,17 @@
   --error-border: #991b1b;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-primary-dark: var(--primary-dark);
-  --color-secondary: var(--secondary);
-  --color-border: var(--border);
-  --color-card-bg: var(--card-bg);
-  --color-text-muted: var(--text-muted);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Step flow utilities */
+.step-circle-bg {
+  background-color: var(--step-circle-bg);
+}
+
+.step-circle-active {
+  background-color: var(--step-circle-active);
+}
+
+.step-text {
+  color: var(--foreground);
 }
 
 body {

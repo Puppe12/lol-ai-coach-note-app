@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useAuth } from "@/app/contexts/AuthContext";
@@ -9,8 +9,13 @@ export default function Header() {
   const { userId, isLoading, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const isLoggedIn = userId !== null;
+
   return (
-    <header className="bg-[var(--sage-medium)] dark:bg-[var(--primary-dark)] border-b border-[var(--sage-dark)] dark:border-[var(--border)] shadow-sm">
+    <header
+      id="main-header"
+      style={{ background: "var(--header-bg)" }}
+      className="border-b border-[var(--sage-dark)] dark:border-[var(--border)] shadow-sm"
+    >
       <div className="max-w-5xl mx-auto p-4 flex items-center justify-between">
         <Link
           href="/"

@@ -1,3 +1,5 @@
+/* Legacy function for old data of plain text */
+
 export interface ParsedNote {
   matchup?: string;
   whatWentWell?: string;
