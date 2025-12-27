@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import GoalsDisplay from "@/app/components/GoalsDisplay";
+import GoalsSelection from "../components/GoalsSelection";
 import NoteCard from "@/app/components/NoteCard";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { useRouter } from "next/navigation";
@@ -36,6 +37,14 @@ export default function NotesPage() {
 
   const [summary, setSummary] = useState<any>(null);
   const [loadingSummary, setLoadingSummary] = useState(false);
+
+  const [selectedGoals, setSelectedGoals] = useState<{
+    primary: string | null;
+    secondary: string[];
+  }>({
+    primary: null,
+    secondary: [],
+  });
 
   // Filter notes by date and outcome
   const filteredNotes = useMemo(() => {
@@ -194,92 +203,6 @@ export default function NotesPage() {
           color="sageGreen"
           size="md"
         />
-      </div>
-    );
-  };
-
-  const renderPaginationOld = () => {
-    if (totalPages <= 1) return null;
-
-    const pages: (number | string)[] = [];
-    const maxVisiblePages = 7;
-
-    if (totalPages <= maxVisiblePages) {
-      // Show all pages if total is small
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      // Show first page, ellipsis, current page range, ellipsis, last page
-      if (currentPage <= 3) {
-        // Near the start
-        for (let i = 1; i <= 4; i++) pages.push(i);
-        pages.push("ellipsis");
-        pages.push(totalPages);
-      } else if (currentPage >= totalPages - 2) {
-        // Near the end
-        pages.push(1);
-        pages.push("ellipsis");
-        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
-      } else {
-        // In the middle
-        pages.push(1);
-        pages.push("ellipsis");
-        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
-        pages.push("ellipsis");
-        pages.push(totalPages);
-      }
-    }
-
-    return (
-      <div className="flex items-center justify-center gap-2 mt-6">
-        <button
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          className="px-3 py-2 bg-[var(--card-bg)] border border-[var(--border)] rounded-lg text-[var(--foreground)] hover:bg-[var(--sage-light)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          aria-label="Previous page"
-        >
-          Previous
-        </button>
-
-        <div className="flex items-center gap-1">
-          {pages.map((page, idx) => {
-            if (page === "ellipsis") {
-              return (
-                <span
-                  key={`ellipsis-${idx}`}
-                  className="px-2 text-[var(--text-muted)]"
-                >
-                  ...
-                </span>
-              );
-            }
-            return (
-              <button
-                key={page}
-                onClick={() => handlePageChange(page as number)}
-                className={`px-3 py-2 rounded-lg transition-colors ${
-                  currentPage === page
-                    ? "bg-[var(--sage-medium)] text-white font-semibold"
-                    : "bg-[var(--card-bg)] border border-[var(--border)] text-[var(--foreground)] hover:bg-[var(--sage-light)]"
-                }`}
-                aria-label={`Page ${page}`}
-                aria-current={currentPage === page ? "page" : undefined}
-              >
-                {page}
-              </button>
-            );
-          })}
-        </div>
-
-        <button
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className="px-3 py-2 bg-[var(--card-bg)] border border-[var(--border)] rounded-lg text-[var(--foreground)] hover:bg-[var(--sage-light)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          aria-label="Next page"
-        >
-          Next
-        </button>
       </div>
     );
   };
@@ -475,8 +398,14 @@ export default function NotesPage() {
         </Accordion>
       )}
 
-      {/* Goals Display */}
-      {goals && <GoalsDisplay data={goals} />}
+      {goals && (
+        <>
+          {/* Hidden until more usage is found */}
+          {/* <GoalsDisplay data={goals} /> */}
+
+          <GoalsSelection goals={goals} />
+        </>
+      )}
     </div>
   );
 }

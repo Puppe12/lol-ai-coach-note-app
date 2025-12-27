@@ -1,118 +1,106 @@
 "use client";
 
-type GoalsData = {
-  improvementAreas?: string[];
-  recommendedGoals?: string[];
-  sessionFocus?: string[];
-  longTermGoals?: string[];
-  skillPlan?: {
-    laning?: string[];
-    midgame?: string[];
-    macro?: string[];
-    mechanics?: string[];
-  };
-};
+import { GoalsData } from "../lib/types";
 
 type GoalsDisplayProps = {
   data: GoalsData;
 };
 
 export default function GoalsDisplay({ data }: GoalsDisplayProps) {
-  if (!data || Object.keys(data).length === 0) {
-    return null;
-  }
+  if (!data) return null;
 
   return (
-    <div className="mt-4 p-6 bg-[var(--card-bg)] border border-[var(--border)] rounded-lg shadow-sm">
+    <div className="mt-4 p-6 bg-[var(--card-bg)] border border-[var(--border)] rounded-lg">
       <h2 className="font-bold text-lg text-[var(--sage-dark)] mb-6">
         GOALS & TRAINING PLAN
       </h2>
 
-      {/* Main sections */}
-      {data.improvementAreas && data.improvementAreas.length > 0 && (
-        <Section title="IMPROVEMENT AREAS" items={data.improvementAreas} />
+      {/* IMPROVEMENT AREAS */}
+      {data.improvementAreas.length > 0 && (
+        <section className="mt-6">
+          <h3 className="font-bold text-lg mb-3">IMPROVEMENT AREAS</h3>
+          <ul>
+            {data.improvementAreas.map((area, i) => (
+              <li key={i} className="text-sm mb-1">
+                {i + 1}. {area}
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
-      {data.recommendedGoals && data.recommendedGoals.length > 0 && (
-        <Section title="RECOMMENDED GOALS" items={data.recommendedGoals} />
+      {/* RECOMMENDED GOALS */}
+      {data.recommendedGoals.length > 0 && (
+        <section className="mt-6">
+          <h3 className="font-bold text-lg mb-3">RECOMMENDED GOALS</h3>
+
+          {data.recommendedGoals.map((g, i) => (
+            <div key={i} className="mb-4">
+              <p className="font-semibold">
+                {i + 1}. {g.goal}
+              </p>
+              <p className="text-sm opacity-80 mt-1">{g.reasoning}</p>
+            </div>
+          ))}
+        </section>
       )}
 
-      {data.sessionFocus && data.sessionFocus.length > 0 && (
-        <Section title="SESSION FOCUS" items={data.sessionFocus} />
+      {/* SESSION FOCUS */}
+      {data.suggestions.length > 0 && (
+        <section className="mt-6">
+          <h3 className="font-bold text-lg mb-3">SESSION FOCUS</h3>
+
+          {data.suggestions.map((s, i) => (
+            <div key={i} className="mb-3">
+              <p className="text-sm">
+                {i + 1}. {s.suggestion}
+              </p>
+              <p className="text-xs opacity-60 ml-4">Supports goal: {s.goal}</p>
+            </div>
+          ))}
+        </section>
       )}
 
-      {data.longTermGoals && data.longTermGoals.length > 0 && (
-        <Section title="LONG-TERM GOALS" items={data.longTermGoals} />
+      {/* LONG TERM GOALS */}
+      {data.longTermGoals.length > 0 && (
+        <section className="mt-6">
+          <h3 className="font-bold text-lg mb-3">LONG-TERM GOALS</h3>
+          <ul>
+            {data.longTermGoals.map((goal, i) => (
+              <li key={i} className="text-sm mb-1">
+                {i + 1}. {goal}
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
-      {/* Skill Plan section */}
-      {data.skillPlan && Object.keys(data.skillPlan).length > 0 && (
-        <div className="mt-6">
-          <h3 className="font-bold text-lg text-[var(--sage-dark)] mb-4">
-            SKILL DEVELOPMENT PLAN
-          </h3>
+      {/* SKILL PLAN */}
+      <section className="mt-8">
+        <h3 className="font-bold text-lg mb-4">SKILL DEVELOPMENT PLAN</h3>
 
-          {data.skillPlan.laning && data.skillPlan.laning.length > 0 && (
-            <Section
-              title="LANING PHASE"
-              items={data.skillPlan.laning}
-              isSubsection
-            />
-          )}
-
-          {data.skillPlan.midgame && data.skillPlan.midgame.length > 0 && (
-            <Section
-              title="MIDGAME"
-              items={data.skillPlan.midgame}
-              isSubsection
-            />
-          )}
-
-          {data.skillPlan.macro && data.skillPlan.macro.length > 0 && (
-            <Section
-              title="MACRO PLAY"
-              items={data.skillPlan.macro}
-              isSubsection
-            />
-          )}
-
-          {data.skillPlan.mechanics && data.skillPlan.mechanics.length > 0 && (
-            <Section
-              title="MECHANICS"
-              items={data.skillPlan.mechanics}
-              isSubsection
-            />
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-type SectionProps = {
-  title: string;
-  items: string[];
-  isSubsection?: boolean;
-};
-
-function Section({ title, items, isSubsection = false }: SectionProps) {
-  return (
-    <div className={isSubsection ? "mt-4" : "mt-6"}>
-      <h4
-        className={`font-bold ${isSubsection ? "text-base mt-4 mb-2 ml-4" : "text-lg mb-3"}`}
-      >
-        {title}
-      </h4>
-      <ul className={isSubsection ? "ml-6" : "ml-0"}>
-        {items.map((item, index) => (
-          <li
-            key={index}
-            className="text-sm text-[var(--foreground)] mb-1 leading-relaxed"
-          >
-            {index + 1}. {item}
-          </li>
-        ))}
-      </ul>
+        {(
+          [
+            ["LANING PHASE", data.skillPlan.laning],
+            ["MIDGAME", data.skillPlan.midgame],
+            ["MACRO PLAY", data.skillPlan.macro],
+            ["MECHANICS", data.skillPlan.mechanics],
+          ] as const
+        ).map(([title, items]) =>
+          items.length > 0 ? (
+            <div key={title} className="mt-4 ml-4">
+              <h4 className="font-semibold mb-2">{title}</h4>
+              <ul className="ml-2">
+                {items.map((item, i) => (
+                  <li key={i} className="text-sm mb-1">
+                    {i + 1}. {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null
+        )}
+      </section>
     </div>
   );
 }

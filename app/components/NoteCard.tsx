@@ -1,7 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Card, Collapse, Badge, Text, Group, Stack, ActionIcon } from "@mantine/core";
+import {
+  Card,
+  Collapse,
+  Badge,
+  Text,
+  Group,
+  Stack,
+  ActionIcon,
+} from "@mantine/core";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { parseNoteText } from "../utils/noteParser";
 import type { Note } from "@/app/types/note";
@@ -99,12 +107,13 @@ export default function NoteCard({ note }: NoteCardProps) {
               </Text>
               {note.summonerName && (
                 <>
+                  {/* TODO: Use Icons instead */}
                   <Text size="sm" c="dimmed">
                     •
                   </Text>
-              <Text size="sm" fw={500} c="sageGreen.7">
-                {note.summonerName}
-              </Text>
+                  <Text size="sm" fw={500} c="sageGreen.7">
+                    {note.summonerName}
+                  </Text>
                 </>
               )}
               {getOutcomeBadge()}
@@ -122,7 +131,11 @@ export default function NoteCard({ note }: NoteCardProps) {
                 <Text size="sm" c="dimmed" fw={600} mb={4}>
                   To Improve:
                 </Text>
-                <Text size="sm" lineClamp={3} style={{ whiteSpace: "pre-wrap" }}>
+                <Text
+                  size="sm"
+                  lineClamp={3}
+                  style={{ whiteSpace: "pre-wrap" }}
+                >
                   {improvements}
                 </Text>
               </div>
@@ -177,7 +190,9 @@ export default function NoteCard({ note }: NoteCardProps) {
                   {allies.map((ally, idx) => (
                     <Text key={idx} size="sm">
                       {ally.summoner && `${ally.summoner}: `}
-                      <span style={{ fontWeight: 600 }}>{ally.champion || "Unknown"}</span>
+                      <span style={{ fontWeight: 600 }}>
+                        {ally.champion || "Unknown"}
+                      </span>
                     </Text>
                   ))}
                 </Stack>
@@ -199,7 +214,9 @@ export default function NoteCard({ note }: NoteCardProps) {
                   {enemies.map((enemy, idx) => (
                     <Text key={idx} size="sm">
                       {enemy.summoner && `${enemy.summoner}: `}
-                      <span style={{ fontWeight: 600 }}>{enemy.champion || "Unknown"}</span>
+                      <span style={{ fontWeight: 600 }}>
+                        {enemy.champion || "Unknown"}
+                      </span>
                     </Text>
                   ))}
                 </Stack>
@@ -258,21 +275,24 @@ export default function NoteCard({ note }: NoteCardProps) {
           )}
 
           {/* Fallback: If no structured sections found, show full text (for legacy notes) */}
-          {!positive && !improvements && !note.structured?.matchup && note.text && (
-            <div>
-              <Group gap="xs" mb="xs">
-                <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-                <Text size="sm" fw={600} tt="uppercase" c="sageGreen.8">
-                  Note Content
-                </Text>
-              </Group>
-              <div className="bg-gray-50/50 dark:bg-gray-900/20 border border-gray-200/60 dark:border-gray-800 rounded-lg p-4">
-                <Text size="sm" style={{ whiteSpace: "pre-wrap" }}>
-                  {note.text}
-                </Text>
+          {!positive &&
+            !improvements &&
+            !note.structured?.matchup &&
+            note.text && (
+              <div>
+                <Group gap="xs" mb="xs">
+                  <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                  <Text size="sm" fw={600} tt="uppercase" c="sageGreen.8">
+                    Note Content
+                  </Text>
+                </Group>
+                <div className="bg-gray-50/50 dark:bg-gray-900/20 border border-gray-200/60 dark:border-gray-800 rounded-lg p-4">
+                  <Text size="sm" style={{ whiteSpace: "pre-wrap" }}>
+                    {note.text}
+                  </Text>
+                </div>
               </div>
-            </div>
-          )}
+            )}
         </Stack>
       </Collapse>
     </Card>
