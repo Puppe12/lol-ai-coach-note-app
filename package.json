@@ -17,7 +17,6 @@
     "@mantine/notifications": "^8.3.10",
     "lucide-react": "^0.562.0",
     "mongodb": "^7.0.0",
-    "mongoose": "^9.0.2",
     "next": "16.0.7",
     "ollama": "^0.6.3",
     "openai": "^6.10.0",
