@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { getUserId } from "@/lib/session";
 import OpenAI from "openai";
+import { GoalsSchema } from "@/app/lib/schemas/goals";
 
 const endpoint = process.env.AZURE_OPENAI_ENDPOINT!;
 const deployment = process.env.AZURE_OPENAI_GPT4O_MINI!;
@@ -48,7 +49,7 @@ export const POST = async (req: Request) => {
           `NOTE ${i + 1}:\nText: ${n.text}\nTags: ${n.ai?.tags?.join(", ") ?? "none"}`
       )
       .join("\n\n");
-
+    /* TODO: add examples to the AI prompt? */
     const systemPrompt = `
 You are a CHALLENGER-LEVEL League of Legends coach.
 
@@ -60,6 +61,7 @@ Your job:
 - avoid generic advice ("farm more", "ward more", "play safe")
 - advice MUST be matchup-, timing-, or mechanic-specific
 - include reasoning, but do NOT hallucinate incorrect note content
+- suggestions should support the generated goals, and the user should be able to use the suggestions to achieve the goals.
 - VERY IMPORTANT: Base findings on the user’s actual notes and tags.
 
 Your output MUST be strict JSON:
@@ -67,7 +69,7 @@ Your output MUST be strict JSON:
 {
   "improvementAreas": [],
   "recommendedGoals": [],
-  "sessionFocus": [],
+  "suggestions": [],
   "longTermGoals": [],
   "skillPlan": {
     "laning": [],
@@ -101,7 +103,9 @@ Generate a goal plan based ONLY on their real issues, but you may add expert rea
     const content = result.choices[0].message.content ?? "{}";
     const json = JSON.parse(content);
 
-    return NextResponse.json(json);
+    const validated = GoalsSchema.parse(json);
+
+    return NextResponse.json(validated);
   } catch (err: any) {
     console.error("Goal generation failed:", err);
     return NextResponse.json(
@@ -110,3 +114,38 @@ Generate a goal plan based ONLY on their real issues, but you may add expert rea
     );
   }
 };
+
+export async function GET() {
+  try {
+    const userId = await getUserId();
+    if (!userId) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const client = await clientPromise;
+    const db = client.db(process.env.MONGODB_DB || "lolcoach");
+
+    // Fetch latest goals document
+    const goalsDoc = await db
+      .collection("goals")
+      .find({ userId })
+      .sort({ createdAt: -1 })
+      .limit(1)
+      .next();
+
+    if (!goalsDoc) {
+      return NextResponse.json({ goals: null });
+    }
+
+    return NextResponse.json({ goals: goalsDoc });
+  } catch (err: any) {
+    console.error("Failed to fetch goals:", err);
+    return NextResponse.json(
+      { error: err.message || "Unknown error" },
+      { status: 500 }
+    );
+  }
+}

@@ -50,6 +50,12 @@ export default function Header() {
               >
                 Notes
               </Link>
+              <Link
+                href="/goals"
+                className="text-sm text-white hover:text-white/80 transition-colors font-medium"
+              >
+                Goals
+              </Link>
             </>
           )}
           {isLoading ? (
