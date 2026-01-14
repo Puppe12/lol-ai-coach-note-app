@@ -3,6 +3,7 @@ import clientPromise from "@/lib/mongodb";
 import { getUserId } from "@/lib/session";
 import OpenAI from "openai";
 import { GoalsSchema } from "@/app/lib/schemas/goals";
+import { ZodError } from "zod";
 
 const endpoint = process.env.AZURE_OPENAI_ENDPOINT!;
 const deployment = process.env.AZURE_OPENAI_GPT4O_MINI!;
@@ -62,22 +63,34 @@ Your job:
 - advice MUST be matchup-, timing-, or mechanic-specific
 - include reasoning, but do NOT hallucinate incorrect note content
 - suggestions should support the generated goals, and the user should be able to use the suggestions to achieve the goals.
-- VERY IMPORTANT: Base findings on the user’s actual notes and tags.
+- VERY IMPORTANT: Base findings on the user's actual notes and tags.
 
-Your output MUST be strict JSON:
+Your output MUST be strict JSON in this EXACT format:
 
 {
-  "improvementAreas": [],
-  "recommendedGoals": [],
-  "suggestions": [],
-  "longTermGoals": [],
+  "improvementAreas": ["string", "string"],
+  "recommendedGoals": [
+    {
+      "goal": "specific goal text",
+      "reasoning": "why this goal matters"
+    }
+  ],
+  "suggestions": [
+    {
+      "goal": "the goal this suggestion relates to",
+      "suggestion": "actionable suggestion to achieve the goal"
+    }
+  ],
+  "longTermGoals": ["string", "string"],
   "skillPlan": {
-    "laning": [],
-    "midgame": [],
-    "macro": [],
-    "mechanics": []
+    "laning": ["string"],
+    "midgame": ["string"],
+    "macro": ["string"],
+    "mechanics": ["string"]
   }
 }
+
+IMPORTANT: Each item in "suggestions" MUST have both "goal" and "suggestion" fields.
 `;
 
     const userPrompt = `
@@ -88,7 +101,6 @@ ${combinedText}
 Generate a goal plan based ONLY on their real issues, but you may add expert reasoning from your experience as a challenger coach.
 `;
     const model = process.env.AZURE_OPENAI_GPT4O_MINI!;
-    console.log("model", model);
     const result = await ai.chat.completions.create({
       model,
       messages: [
@@ -107,6 +119,19 @@ Generate a goal plan based ONLY on their real issues, but you may add expert rea
 
     return NextResponse.json(validated);
   } catch (err: any) {
+    // Handle Zod validation errors
+    if (err instanceof ZodError) {
+      console.error("Validation error:", err.issues);
+      return NextResponse.json(
+        { 
+          error: "Validation failed", 
+          details: err.issues.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(", "),
+          issues: err.issues 
+        },
+        { status: 400 }
+      );
+    }
+    
     console.error("Goal generation failed:", err);
     return NextResponse.json(
       { error: err.message || "unknown" },
@@ -141,7 +166,7 @@ export async function GET() {
     }
 
     return NextResponse.json({ goals: goalsDoc });
-  } catch (err: any) {
+  } catch (err: any) {    
     console.error("Failed to fetch goals:", err);
     return NextResponse.json(
       { error: err.message || "Unknown error" },

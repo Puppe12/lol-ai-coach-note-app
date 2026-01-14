@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
+import { AIDraftAnalysisSchema } from "@/app/lib/schemas/ai-prompts";
+import { ZodError } from "zod";
 
 const client = new OpenAI({
   apiKey: process.env.AZURE_OPENAI_API_KEY!,
@@ -41,30 +43,53 @@ Tasks:
    - team (ally or enemy)
 3. Identify which player matches the given summoner name.
 4. For that player:
-   - champion
-   - likely role if visible or inferable
-   - direct lane opponent if visible
+   - champion (REQUIRED: must be a string, not empty)
+   - likely role if visible or inferable (REQUIRED: must be a string like "top", "jungle", "mid", "bot", "support")
+   - direct lane opponent if visible (REQUIRED: must be a string, use "unknown" if not visible)
 5. IMPORTANT: Detect the game outcome (Victory or Defeat):
    - Look for "Victory" or "Defeat" banners/text in the image
    - Check team colors and UI indicators
    - If unclear or not visible, return "unknown"
 
-If something is unclear, use "unknown". Do NOT guess.
+VALIDATION RULES:
+- ALL fields in "me" object are REQUIRED and must be non-empty strings
+- If you cannot determine a value, use "unknown" - NEVER use null or undefined
+- "allies" and "enemies" must be arrays of player objects with summoner, champion, and team fields
+- Each player object MUST have all three fields: summoner (string), champion (string), team ("ally" or "enemy")
+- "gameOutcome" must be EXACTLY one of: "victory", "defeat", or "unknown" (lowercase only)
 
-Output STRICT JSON in this exact shape:
+Output STRICT JSON in this EXACT format:
+
 {
   "me": {
-    "summoner": "",
-    "champion": "",
-    "role": "",
-    "opponentChampion": ""
+    "summoner": "string (the user's summoner name from input)",
+    "champion": "string (champion name, never empty)",
+    "role": "string (top/jungle/mid/bot/support or unknown)",
+    "opponentChampion": "string (enemy laner champion or unknown)"
   },
   "teams": {
-    "allies": [],
-    "enemies": []
+    "allies": [
+      {
+        "summoner": "string (player summoner name)",
+        "champion": "string (champion name)",
+        "team": "ally"
+      }
+    ],
+    "enemies": [
+      {
+        "summoner": "string (player summoner name)",
+        "champion": "string (champion name)",
+        "team": "enemy"
+      }
+    ]
   },
-  "gameOutcome": "victory" | "defeat" | "unknown"
+  "gameOutcome": "victory OR defeat OR unknown"
 }
+
+CRITICAL: 
+- Every field must have a string value. Never return null, undefined, or empty strings.
+- Include ALL 5 players for allies (including the user) and ALL 5 players for enemies.
+- The "team" field must be exactly "ally" or "enemy" (lowercase).
 `;
 
     const response = await client.chat.completions.create({
@@ -90,11 +115,29 @@ Output STRICT JSON in this exact shape:
     const content = response.choices[0]?.message?.content;
 
     if (!content) {
-      throw new Error("Analyziz failed, make sure selected image includes clear endgame lobby screenshot");
+      throw new Error("Analysis failed, make sure selected image includes clear endgame lobby screenshot");
     }
 
-    return NextResponse.json(JSON.parse(content));
+    const parsed = JSON.parse(content);
+    
+    // Validate AI response with schema
+    const validatedDraft = AIDraftAnalysisSchema.parse(parsed);
+
+    return NextResponse.json(validatedDraft);
   } catch (error: any) {
+    // Handle Zod validation errors
+    if (error instanceof ZodError) {
+      console.error("Validation error:", error.issues);
+      return NextResponse.json(
+        { 
+          error: "Invalid AI response format", 
+          details: error.issues.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(", "),
+          issues: error.issues 
+        },
+        { status: 500 }
+      );
+    }
+    
     console.error("Draft generation failed:", error);
 
     return NextResponse.json(
