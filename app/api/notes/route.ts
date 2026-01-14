@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { getUserId } from "@/lib/session";
 import OpenAI from "openai";
-import type { StructuredNoteData } from "@/app/types/note";
+import { CreateNoteSchema } from "@/app/lib/schemas/notes";
+import { AITagsResponseSchema } from "@/app/lib/schemas/ai-prompts";
+import { ZodError } from "zod";
 
 const embeddingModel = process.env.AZURE_OPENAI_EMBEDDINGS!;
 const GPTMiniModel = process.env.AZURE_OPENAI_GPT4O_MINI!;
@@ -35,14 +37,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const { text, draft, summonerName, structured } = await req.json();
-
-    if (!text && !structured) {
-      return NextResponse.json(
-        { error: "Text or structured data is required" },
-        { status: 400 }
-      );
-    }
+    const body = await req.json();
+    const validated = CreateNoteSchema.parse(body);
+    const { text, draft, summonerName, structured } = validated;
 
     // 1) Auto-tag
     const autoTagRes = await ai.chat.completions.create({
@@ -65,7 +62,10 @@ export async function POST(req: Request) {
 
     const content = autoTagRes.choices[0].message.content ?? "{}";
     const tagJson = JSON.parse(content);
-    const tags = tagJson.tags || [];
+    
+    // Validate AI response
+    const validatedTags = AITagsResponseSchema.parse(tagJson);
+    const tags = validatedTags.tags;
 
     // 2) Create embedding from combined content
     const embeddingText = structured
@@ -107,6 +107,19 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ ok: true, id: result.insertedId, tags });
   } catch (err: any) {
+    // Handle Zod validation errors
+    if (err instanceof ZodError) {
+      console.error("Validation error:", err.issues);
+      return NextResponse.json(
+        { 
+          error: "Validation failed", 
+          details: err.issues.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(", "),
+          issues: err.issues 
+        },
+        { status: 400 }
+      );
+    }
+    
     console.error("Failed saving note:", err);
     return NextResponse.json(
       { error: err.message || "unknown" },

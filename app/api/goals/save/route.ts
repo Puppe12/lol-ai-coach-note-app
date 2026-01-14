@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { getUserId } from "@/lib/session";
 import { UserGoalsSchema } from "@/app/lib/schemas/goals";
+import { ZodError } from "zod";
 
 export async function POST(req: Request) {
   try {
@@ -61,6 +62,19 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true });
   } catch (err: any) {
+    // Handle Zod validation errors
+    if (err instanceof ZodError) {
+      console.error("Validation error:", err.issues);
+      return NextResponse.json(
+        { 
+          error: "Validation failed", 
+          details: err.issues.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(", "),
+          issues: err.issues 
+        },
+        { status: 400 }
+      );
+    }
+    
     console.error("Failed to save user goals:", err);
     return NextResponse.json(
       { error: err.message || "Unknown error" },
