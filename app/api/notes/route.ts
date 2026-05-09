@@ -5,6 +5,7 @@ import OpenAI from "openai";
 import { CreateNoteSchema } from "@/app/lib/schemas/notes";
 import { AITagsResponseSchema } from "@/app/lib/schemas/ai-prompts";
 import { ZodError } from "zod";
+import { ObjectId } from "mongodb";
 
 const embeddingModel = process.env.AZURE_OPENAI_EMBEDDINGS!;
 const GPTMiniModel = process.env.AZURE_OPENAI_GPT4O_MINI!;
@@ -28,7 +29,6 @@ const embedClient = new OpenAI({
 
 export async function POST(req: Request) {
   try {
-    /* TODO make into a helper to be called? */
     const userId = await getUserId();
     if (!userId) {
       return NextResponse.json(
@@ -62,7 +62,7 @@ export async function POST(req: Request) {
 
     const content = autoTagRes.choices[0].message.content ?? "{}";
     const tagJson = JSON.parse(content);
-    
+
     // Validate AI response
     const validatedTags = AITagsResponseSchema.parse(tagJson);
     const tags = validatedTags.tags;
@@ -79,12 +79,8 @@ export async function POST(req: Request) {
 
     const vector = embed.data[0].embedding;
 
-    // 3) Save to MongoDB
     const client = await clientPromise;
     const db = client.db(mongoDB || "lolcoach");
-
-    // Debug: Log database name
-    console.log("Saving to database:", db.databaseName);
 
     const noteDocument: any = {
       text,
@@ -111,15 +107,17 @@ export async function POST(req: Request) {
     if (err instanceof ZodError) {
       console.error("Validation error:", err.issues);
       return NextResponse.json(
-        { 
-          error: "Validation failed", 
-          details: err.issues.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(", "),
-          issues: err.issues 
+        {
+          error: "Validation failed",
+          details: err.issues
+            .map((e: any) => `${e.path.join(".")}: ${e.message}`)
+            .join(", "),
+          issues: err.issues,
         },
         { status: 400 }
       );
     }
-    
+
     console.error("Failed saving note:", err);
     return NextResponse.json(
       { error: err.message || "unknown" },
@@ -151,6 +149,34 @@ export async function GET() {
     return NextResponse.json({ ok: true, notes: result });
   } catch (err: any) {
     console.error("Failed fetching notes:", err);
+    return NextResponse.json(
+      { error: err.message || "unknown" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const userId = await getUserId();
+    if (!userId) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+    const { noteId } = await req.json();
+    const client = await clientPromise;
+    const db = client.db(mongoDB || "lolcoach");
+    const result = await db
+      .collection("notes")
+      .deleteOne({ _id: new ObjectId(noteId), userId });
+    if (result.deletedCount === 0) {
+      return NextResponse.json({ error: "Note not found" }, { status: 404 });
+    }
+    return NextResponse.json({ ok: true });
+  } catch (err: any) {
+    console.error("Failed deleting note:", err);
     return NextResponse.json(
       { error: err.message || "unknown" },
       { status: 500 }

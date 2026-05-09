@@ -15,13 +15,17 @@
     "@mantine/core": "^8.3.10",
     "@mantine/hooks": "^8.3.10",
     "@mantine/notifications": "^8.3.10",
+    "install": "^0.13.0",
     "lucide-react": "^0.562.0",
     "mongodb": "^7.0.0",
     "next": "16.0.7",
+    "npm": "^11.11.0",
     "ollama": "^0.6.3",
     "openai": "^6.10.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
+    "react-icons": "^5.5.0",
+    "react-toastify": "^11.0.5",
     "zod": "^4.2.1"
   },
   "devDependencies": {

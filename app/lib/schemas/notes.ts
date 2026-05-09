@@ -16,17 +16,16 @@ export const NoteAIDataSchema = z.object({
 });
 
 // Schema for creating a new note (POST request body)
-export const CreateNoteSchema = z.object({
-  text: z.string().min(1, "Text is required"),
-  draft: DraftSchema.optional(),
-  summonerName: z.string().optional(),
-  structured: StructuredNoteDataSchema.optional(),
-}).refine(
-  (data) => data.text || data.structured,
-  {
+export const CreateNoteSchema = z
+  .object({
+    text: z.string().min(1, "Text is required"),
+    draft: DraftSchema.nullable().optional(),
+    summonerName: z.string().optional(),
+    structured: StructuredNoteDataSchema.optional(),
+  })
+  .refine((data) => data.text || data.structured, {
     message: "Either text or structured data must be provided",
-  }
-);
+  });
 
 // Schema for the complete note document (as stored in DB)
 export const NoteSchema = z.object({
@@ -65,4 +64,6 @@ export type NoteAIData = z.infer<typeof NoteAIDataSchema>;
 export type CreateNoteInput = z.infer<typeof CreateNoteSchema>;
 export type Note = z.infer<typeof NoteSchema>;
 export type SummarizeNotesRequest = z.infer<typeof SummarizeNotesRequestSchema>;
-export type SummarizeNotesResponse = z.infer<typeof SummarizeNotesResponseSchema>;
+export type SummarizeNotesResponse = z.infer<
+  typeof SummarizeNotesResponseSchema
+>;

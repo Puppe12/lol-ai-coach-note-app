@@ -1,29 +1,23 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import Link from "next/link";
-import GoalsDisplay from "@/app/components/GoalsDisplay";
-import GoalsSelection from "../components/GoalsSelection";
+import { Pagination } from "@mantine/core";
 import NoteCard from "@/app/components/NoteCard";
-import { useAuth } from "@/app/contexts/AuthContext";
-import { useRouter } from "next/navigation";
-import {
-  SegmentedControl,
-  Pagination,
-  Button,
-  Group,
-  Accordion,
-  Text,
-  Stack,
-} from "@mantine/core";
+import GoalsSelection from "../components/GoalsSelection";
+import NotesHeader from "@/app/components/NotesHeader";
+import NotesFilters from "@/app/components/NotesFilters";
+import NotesActions from "@/app/components/NotesActions";
+import NotesSummarySection from "@/app/components/NotesSummarySection";
 import type { Note } from "@/app/types/note";
+import {
+  NotificationTypes,
+  useNotification,
+} from "../contexts/ToastNotificationContext";
 
 type DateFilter = "all" | "today" | "thisWeek" | "thisMonth";
 type OutcomeFilter = "all" | "victory" | "defeat";
 
 export default function NotesPage() {
-  const router = useRouter();
-  const { userId, isLoading } = useAuth();
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +25,8 @@ export default function NotesPage() {
   const [outcomeFilter, setOutcomeFilter] = useState<OutcomeFilter>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const notesPerPage = 10;
+
+  const { addNotification } = useNotification();
 
   const [goals, setGoals] = useState<any>(null);
   const [loadingGoals, setLoadingGoals] = useState(false);
@@ -51,6 +47,7 @@ export default function NotesPage() {
     let filtered = notes;
 
     // Date filter
+    /* TODO: Build this into it's own component/util helper */
     if (dateFilter !== "all") {
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -207,205 +204,133 @@ export default function NotesPage() {
     );
   };
 
+  const handleDeleteNote = async (noteId: string) => {
+    try {
+      const res = await fetch("/api/notes", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ noteId }),
+      });
+      if (!res.ok) {
+        throw new Error("Failed to delete note");
+      }
+      loadNotes();
+      addNotification({
+        message: "Note deleted successfully",
+        type: NotificationTypes.success,
+        duration: 10000,
+      });
+    } catch (error: any) {
+      console.error("Error deleting note:", error);
+      addNotification({
+        message: "Failed to delete note",
+        type: NotificationTypes.error,
+        duration: 10000,
+      });
+    }
+  };
+
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-[var(--sage-dark)]">
-          Your Notes
-        </h1>
-        <Link
-          href="/new-note"
-          className="bg-[var(--sage-medium)] text-white px-4 py-2 rounded-lg shadow-sm hover:bg-[var(--sage-dark)] transition-colors font-medium"
-        >
-          New Note
-        </Link>
-      </div>
+    <div className="mx-auto max-w-5xl px-6 py-8 sm:px-8 lg:px-0">
+      <NotesHeader totalNotes={notes.length} />
 
-      {/* Filter Controls */}
-      <div className="mb-6 space-y-4">
-        <div>
-          <Text size="sm" fw={500} c="sageGreen.8" mb="xs">
-            Filter by date:
-          </Text>
-          <SegmentedControl
-            value={dateFilter}
-            onChange={(value) => setDateFilter(value as DateFilter)}
-            data={[
-              { label: "All Time", value: "all" },
-              { label: "Today", value: "today" },
-              { label: "This Week", value: "thisWeek" },
-              { label: "This Month", value: "thisMonth" },
-            ]}
-            color="sageGreen"
-          />
-        </div>
+      <NotesFilters
+        dateFilter={dateFilter}
+        outcomeFilter={outcomeFilter}
+        totalFiltered={filteredNotes.length}
+        onDateFilterChange={(value) => setDateFilter(value as DateFilter)}
+        onOutcomeFilterChange={(value) =>
+          setOutcomeFilter(value as OutcomeFilter)
+        }
+      />
 
-        <div>
-          <Text size="sm" fw={500} c="sageGreen.8" mb="xs">
-            Filter by outcome:
-          </Text>
-          <SegmentedControl
-            value={outcomeFilter}
-            onChange={(value) => setOutcomeFilter(value as OutcomeFilter)}
-            data={[
-              { label: "All Games", value: "all" },
-              { label: "Victories", value: "victory" },
-              { label: "Defeats", value: "defeat" },
-            ]}
-            color="sageGreen"
-          />
-        </div>
-
-        <Text size="sm" c="dimmed">
-          {filteredNotes.length} note{filteredNotes.length !== 1 ? "s" : ""}{" "}
-          found
-        </Text>
-      </div>
-
-      {/* Loading State */}
-      {loading && (
-        <div className="text-center py-8">
-          <p className="text-[var(--text-muted)]">Loading notes…</p>
-        </div>
-      )}
-
-      {/* Error State */}
-      {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
-          <p className="text-red-600 dark:text-red-400">Error: {error}</p>
-        </div>
-      )}
-
-      {/* Empty State */}
-      {!loading && filteredNotes.length === 0 && (
-        <div className="text-center py-12 bg-[var(--card-bg)] border-2 border-[var(--border)] rounded-xl">
-          <p className="text-[var(--text-muted)] text-lg mb-2">
-            {dateFilter === "all"
-              ? "No notes yet — create your first note."
-              : `No notes found for ${dateFilter === "today" ? "today" : dateFilter === "thisWeek" ? "this week" : "this month"}.`}
-          </p>
-          {dateFilter !== "all" && (
-            <button
-              onClick={() => setDateFilter("all")}
-              className="text-[var(--sage-medium)] hover:text-[var(--sage-dark)] font-medium"
-            >
-              Show all notes
-            </button>
+      <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.3fr)]">
+        {/* Left column: list, loading, errors */}
+        <section>
+          {/* Loading State */}
+          {loading && (
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-6 text-center">
+              <p className="text-[var(--text-muted)]">Loading notes…</p>
+            </div>
           )}
-        </div>
-      )}
 
-      {/* Notes List */}
-      {!loading && paginatedNotes.length > 0 && (
-        <div className="space-y-4">
-          {paginatedNotes.map((note) => (
-            <NoteCard key={note._id} note={note} />
-          ))}
-        </div>
-      )}
+          {/* Error State */}
+          {error && !loading && (
+            <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-left dark:border-red-800 dark:bg-red-900/20">
+              <p className="text-sm font-medium text-red-700 dark:text-red-300">
+                Error loading notes
+              </p>
+              <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                {error}
+              </p>
+            </div>
+          )}
 
-      {/* Pagination */}
-      {renderPagination()}
+          {/* Empty State */}
+          {!loading && !error && filteredNotes.length === 0 && (
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-8 text-center">
+              <p className="mb-2 text-lg text-[var(--foreground)]">
+                {dateFilter === "all"
+                  ? "No notes yet — create your first note."
+                  : `No notes found for ${
+                      dateFilter === "today"
+                        ? "today"
+                        : dateFilter === "thisWeek"
+                          ? "this week"
+                          : "this month"
+                    }.`}
+              </p>
+              {dateFilter !== "all" && (
+                <button
+                  onClick={() => setDateFilter("all")}
+                  className="text-sm font-medium text-[var(--primary)] transition-colors hover:text-[var(--primary-dark)]"
+                >
+                  Show all notes
+                </button>
+              )}
+            </div>
+          )}
 
-      {/* Action Buttons */}
-      <Group mt="xl" gap="md">
-        <Button onClick={loadNotes} variant="light" color="sageGreen">
-          Refresh
-        </Button>
+          {/* Notes List */}
+          {!loading && !error && paginatedNotes.length > 0 && (
+            <div className="space-y-4">
+              {paginatedNotes.map((note) => (
+                <NoteCard
+                  key={note._id}
+                  note={note}
+                  onDelete={handleDeleteNote}
+                />
+              ))}
+            </div>
+          )}
 
-        <Button
-          onClick={summarizeNotes}
-          disabled={loadingSummary || filteredNotes.length === 0}
-          color="sageGreen"
-          variant="light"
-          loading={loadingSummary}
-        >
-          Summarize Visible Notes
-        </Button>
+          {/* Pagination */}
+          {renderPagination()}
+        </section>
 
-        <Button
-          onClick={generateGoals}
-          disabled={loadingGoals || filteredNotes.length === 0}
-          color="sageGreen"
-          loading={loadingGoals}
-        >
-          Generate Goals
-        </Button>
-      </Group>
+        {/* Right column: actions, summary, goals */}
+        <section className="space-y-6">
+          <NotesActions
+            hasNotes={filteredNotes.length > 0}
+            loadingSummary={loadingSummary}
+            loadingGoals={loadingGoals}
+            onRefresh={loadNotes}
+            onSummarize={summarizeNotes}
+            onGenerateGoals={generateGoals}
+          />
 
-      {/* Summary Display */}
-      {summary && (
-        <Accordion mt="xl" variant="separated" radius="md">
-          <Accordion.Item value="summary">
-            <Accordion.Control>
-              <Text fw={600} size="lg" c="sageGreen.8">
-                AI Summary of {filteredNotes.length} Notes
-              </Text>
-            </Accordion.Control>
-            <Accordion.Panel>
-              <Stack gap="md">
-                {summary.overallSummary && (
-                  <div>
-                    <Group gap="xs" mb="xs">
-                      <div className="w-2 h-2 rounded-full bg-blue-400"></div>
-                      <Text fw={600} size="sm" tt="uppercase" c="sageGreen.8">
-                        Overall Summary
-                      </Text>
-                    </Group>
-                    <div className="bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200/60 dark:border-blue-800 rounded-lg p-4">
-                      <Text size="sm" style={{ whiteSpace: "pre-wrap" }}>
-                        {summary.overallSummary}
-                      </Text>
-                    </div>
-                  </div>
-                )}
+          <NotesSummarySection
+            summary={summary}
+            noteCount={filteredNotes.length}
+          />
 
-                {summary.positives && (
-                  <div>
-                    <Group gap="xs" mb="xs">
-                      <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
-                      <Text fw={600} size="sm" tt="uppercase" c="sageGreen.8">
-                        What Went Well
-                      </Text>
-                    </Group>
-                    <div className="bg-emerald-50/50 dark:bg-green-900/20 border border-emerald-200/60 dark:border-green-800 rounded-lg p-4">
-                      <Text size="sm" style={{ whiteSpace: "pre-wrap" }}>
-                        {summary.positives}
-                      </Text>
-                    </div>
-                  </div>
-                )}
-
-                {summary.improvements && (
-                  <div>
-                    <Group gap="xs" mb="xs">
-                      <div className="w-2 h-2 rounded-full bg-rose-400"></div>
-                      <Text fw={600} size="sm" tt="uppercase" c="sageGreen.8">
-                        Areas for Improvement
-                      </Text>
-                    </Group>
-                    <div className="bg-rose-50/50 dark:bg-red-900/20 border border-rose-200/60 dark:border-red-800 rounded-lg p-4">
-                      <Text size="sm" style={{ whiteSpace: "pre-wrap" }}>
-                        {summary.improvements}
-                      </Text>
-                    </div>
-                  </div>
-                )}
-              </Stack>
-            </Accordion.Panel>
-          </Accordion.Item>
-        </Accordion>
-      )}
-
-      {goals && (
-        <>
-          {/* Hidden until more usage is found */}
-          {/* <GoalsDisplay data={goals} /> */}
-
-          <GoalsSelection goals={goals} />
-        </>
-      )}
+          {goals && (
+            <div>
+              <GoalsSelection goals={goals} />
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   );
 }
