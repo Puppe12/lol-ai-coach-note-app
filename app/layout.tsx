@@ -7,6 +7,7 @@ import Header from "@/app/components/Header";
 import { AuthProvider } from "@/app/contexts/AuthContext";
 import { ThemeProvider } from "@/app/contexts/ThemeContext";
 import { MantineThemeProvider } from "@/app/components/MantineThemeProvider";
+import { ToastNotificationProvider } from "@/app/contexts/ToastNotificationContext";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -35,8 +36,10 @@ export default function RootLayout({
         <ThemeProvider>
           <MantineThemeProvider>
             <AuthProvider>
-              <Header />
-              <main>{children}</main>
+              <ToastNotificationProvider>
+                <Header />
+                <main>{children}</main>
+              </ToastNotificationProvider>
             </AuthProvider>
           </MantineThemeProvider>
         </ThemeProvider>

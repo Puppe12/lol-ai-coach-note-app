@@ -66,7 +66,7 @@ export default function NewNotePage() {
     if (!imageFile) return;
 
     setLoadingDraft(true);
-    setError(null); // Clear any previous errors
+    setError(null);
     const form = new FormData();
     form.append("image", imageFile);
     if (username) {
@@ -104,7 +104,7 @@ export default function NewNotePage() {
   };
 
   const handleSubmit = async () => {
-    setError(null); // Clear any previous errors
+    setError(null);
 
     if (!matchup.trim() && !draftResult) {
       setError({
@@ -126,7 +126,6 @@ export default function NewNotePage() {
     // Combine all fields into note text for backend (backup/legacy)
     const noteText = `${matchup}\n\nWhat went well:\n${whatWentWell}\n\nWhat went poorly:\n${whatWentPoorly}`;
 
-    // Prepare structured data
     const structured = {
       matchup: matchup.trim() || undefined,
       positive: whatWentWell.trim() || undefined,
@@ -142,7 +141,7 @@ export default function NewNotePage() {
         },
         body: JSON.stringify({
           text: noteText,
-          draft: draftResult,
+          draft: draftResult ?? null,
           summonerName: username || "",
           tags,
           structured,
@@ -233,7 +232,7 @@ export default function NewNotePage() {
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[var(--sage-dark)] mb-2">
+        <h1 className="text-3xl font-bold text-[var(--foreground)] mb-2">
           Create New Game Note
         </h1>
         <p className="text-[var(--text-muted)]">
@@ -252,13 +251,13 @@ export default function NewNotePage() {
 
       {/* Step Flow Indicator */}
       {/* TODO make this into a better solution, some sort of state-checker for steps instead of individual booleans? */}
-      <div className="bg-gradient-to-r from-[var(--sage-light)] to-[var(--sage-medium)] rounded-lg p-6 mb-6 border-2 border-[var(--border)]">
+      <div className="bg-gradient-to-r from-[var(--secondary)] to-[var(--primary)] rounded-lg p-6 mb-6 border-2 border-[var(--border)]">
         <div className="flex items-center justify-between text-sm">
           <div
             className={`flex items-center gap-2 ${hasImage ? "step-text font-semibold" : "text-[var(--text-muted)]"}`}
           >
             <span
-              className={`w-8 h-8 rounded-full flex items-center justify-center ${hasImage ? "step-circle-active text-white" : "step-circle-bg step-text border-2 border-[var(--sage-dark)]"}`}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center ${hasImage ? "step-circle-active text-white" : "step-circle-bg step-text border-2 border-[var(--primary-dark)]"}`}
             >
               1
             </span>
@@ -269,7 +268,7 @@ export default function NewNotePage() {
             className={`flex items-center gap-2 ${hasAnalysis ? "step-text font-semibold" : "text-[var(--text-muted)]"}`}
           >
             <span
-              className={`w-8 h-8 rounded-full flex items-center justify-center ${hasAnalysis ? "step-circle-active text-white" : "step-circle-bg step-text border-2 border-[var(--sage-dark)]"}`}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center ${hasAnalysis ? "step-circle-active text-white" : "step-circle-bg step-text border-2 border-[var(--primary-dark)]"}`}
             >
               2
             </span>
@@ -280,7 +279,7 @@ export default function NewNotePage() {
             className={`flex items-center gap-2 ${tags.length > 0 ? "step-text font-semibold" : "text-[var(--text-muted)]"}`}
           >
             <span
-              className={`w-8 h-8 rounded-full flex items-center justify-center ${tags.length > 0 ? "step-circle-active text-white" : "step-circle-bg step-text border-2 border-[var(--sage-dark)]"}`}
+              className={`w-8 h-8 rounded-full flex items-center justify-center ${tags.length > 0 ? "step-circle-active text-white" : "step-circle-bg step-text border-2 border-[var(--primary-dark)]"}`}
             >
               3
             </span>
@@ -288,7 +287,7 @@ export default function NewNotePage() {
           </div>
           <div className="flex-1 h-1 bg-[var(--border)] mx-4"></div>
           <div className="flex items-center gap-2 text-[var(--text-muted)]">
-            <span className="w-8 h-8 rounded-full flex items-center justify-center step-circle-bg step-text border-2 border-[var(--sage-dark)]">
+            <span className="w-8 h-8 rounded-full flex items-center justify-center step-circle-bg step-text border-2 border-[var(--primary-dark)]">
               4
             </span>
             <span className="text-[var(--step-text)]">Save Note</span>
@@ -298,8 +297,8 @@ export default function NewNotePage() {
 
       {/* Step 1: Username & Image Upload */}
       <div className="bg-[var(--card-bg)] border-2 border-[var(--border)] rounded-xl p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-[var(--sage-dark)] mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-full bg-[var(--sage-medium)] text-white flex items-center justify-center text-sm font-bold">
+        <h2 className="text-xl font-semibold text-[var(--foreground)] mb-4 flex items-center gap-2">
+          <span className="w-8 h-8 rounded-full bg-[var(--primary)] text-white flex items-center justify-center text-sm font-bold">
             1
           </span>
           Player Info & Draft Image
@@ -307,7 +306,7 @@ export default function NewNotePage() {
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[var(--sage-dark)] mb-2">
+            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
               Summoner Name
             </label>
             <input
@@ -320,7 +319,7 @@ export default function NewNotePage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[var(--sage-dark)] mb-2">
+            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
               Draft/Lobby Screenshot{" "}
               <span className="text-red-500 dark:text-red-400">*</span>
             </label>
@@ -329,11 +328,11 @@ export default function NewNotePage() {
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}
-                className="w-full border-2 border-dashed border-[var(--sage-light)] rounded-lg p-4 bg-[var(--sage-light)]/20 text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--sage-medium)] focus:border-transparent transition-all cursor-pointer hover:border-[var(--sage-medium)]"
+                className="w-full border-2 border-dashed border-[var(--border)] rounded-lg p-4 bg-[var(--secondary)]/20 text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all cursor-pointer hover:border-[var(--primary)]"
               />
             </div>
             {imageFile && (
-              <div className="mt-2 flex items-center gap-2 text-sm text-[var(--sage-dark)]">
+              <div className="mt-2 flex items-center gap-2 text-sm text-[var(--foreground)]">
                 <span className="font-medium">Selected:</span>
                 <span>{imageFile.name}</span>
               </div>
@@ -343,7 +342,7 @@ export default function NewNotePage() {
           <button
             disabled={!imageFile || loadingDraft}
             onClick={handleAnalyzeImage}
-            className="w-full bg-[var(--sage-medium)] hover:bg-[var(--sage-dark)] text-white px-6 py-3 rounded-lg transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+            className="w-full bg-[var(--primary)] hover:bg-[var(--primary-dark)] text-white px-6 py-3 rounded-lg transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
           >
             {loadingDraft ? (
               <span className="flex items-center justify-center gap-2">
@@ -376,8 +375,8 @@ export default function NewNotePage() {
       <div
         className={`bg-[var(--card-bg)] border-2 rounded-xl p-6 shadow-sm transition-all ${hasAnalysis ? "border-[var(--primary)]" : "border-[var(--border)]"}`}
       >
-        <h2 className="text-xl font-semibold text-[var(--sage-dark)] mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-full bg-[var(--sage-medium)] text-white flex items-center justify-center text-sm font-bold">
+        <h2 className="text-xl font-semibold text-[var(--foreground)] mb-4 flex items-center gap-2">
+          <span className="w-8 h-8 rounded-full bg-[var(--primary)] text-white flex items-center justify-center text-sm font-bold">
             2
           </span>
           Game Details
@@ -386,7 +385,7 @@ export default function NewNotePage() {
         <div className="space-y-5">
           {/* Matchup Field */}
           <div>
-            <label className="block text-sm font-medium text-[var(--sage-dark)] mb-2">
+            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
               Matchup{" "}
               <span className="text-xs text-[var(--text-muted)]">
                 (Auto-filled from image analysis)
@@ -403,7 +402,7 @@ export default function NewNotePage() {
 
           {/* Game Outcome Selector */}
           <div>
-            <label className="block text-sm font-medium text-[var(--sage-dark)] mb-2">
+            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
               Game Outcome{" "}
               <span className="text-xs text-[var(--text-muted)]">
                 (Auto-detected from image)
@@ -415,8 +414,8 @@ export default function NewNotePage() {
                 onClick={() => setGameOutcome("victory")}
                 className={`flex-1 px-4 py-3 rounded-lg font-semibold transition-all border-2 ${
                   gameOutcome === "victory"
-                    ? "bg-[var(--sage-medium)] text-white border-[var(--sage-dark)] shadow-md"
-                    : "bg-[var(--card-bg)] text-[var(--foreground)] border-[var(--border)] hover:border-[var(--sage-medium)]"
+                    ? "bg-[var(--primary)] text-white border-[var(--primary-dark)] shadow-md"
+                    : "bg-[var(--card-bg)] text-[var(--foreground)] border-[var(--border)] hover:border-[var(--primary)]"
                 }`}
               >
                 Victory
@@ -448,7 +447,7 @@ export default function NewNotePage() {
 
           {/* What Went Well */}
           <div>
-            <label className="block text-sm font-medium text-[var(--sage-dark)] mb-2 flex items-center gap-2">
+            <label className="block text-sm font-medium text-[var(--foreground)] mb-2 flex items-center gap-2">
               What Went Well
               <span className="text-xs text-[var(--text-muted)] font-normal">
                 (Voice input coming soon)
@@ -473,7 +472,7 @@ Examples:
 
           {/* What Went Poorly */}
           <div>
-            <label className="block text-sm font-medium text-[var(--sage-dark)] mb-2 flex items-center gap-2">
+            <label className="block text-sm font-medium text-[var(--foreground)] mb-2 flex items-center gap-2">
               What Went Poorly
               <span className="text-xs text-[var(--text-muted)] font-normal">
                 (Voice input coming soon)
@@ -500,8 +499,8 @@ Examples:
 
       {/* Step 3: Tags */}
       <div className="bg-[var(--card-bg)] border-2 border-[var(--border)] rounded-xl p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-[var(--sage-dark)] mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-full bg-[var(--sage-medium)] text-white flex items-center justify-center text-sm font-bold">
+        <h2 className="text-xl font-semibold text-[var(--foreground)] mb-4 flex items-center gap-2">
+          <span className="w-8 h-8 rounded-full bg-[var(--primary)] text-white flex items-center justify-center text-sm font-bold">
             3
           </span>
           AI-Powered Tags
@@ -510,7 +509,7 @@ Examples:
         <button
           onClick={runAutotag}
           disabled={tagging || !hasContent}
-          className="w-full bg-[var(--sage-light)] text-[var(--sage-dark)] px-6 py-3 rounded-lg hover:bg-[var(--sage-medium)] hover:text-white transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-sm mb-4"
+          className="w-full bg-[var(--secondary)] text-[var(--foreground)] px-6 py-3 rounded-lg hover:bg-[var(--primary)] hover:text-white transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-sm mb-4"
         >
           {tagging ? "Generating Tags..." : "Generate Smart Tags"}
         </button>
@@ -528,7 +527,7 @@ Examples:
               tags.map((t) => (
                 <span
                   key={t}
-                  className="px-4 py-2 bg-[var(--sage-light)] text-[var(--sage-dark)] rounded-full text-sm font-medium shadow-sm"
+                  className="px-4 py-2 bg-[var(--secondary)] text-[var(--foreground)] rounded-full text-sm font-medium shadow-sm"
                   title={tagExplanations[t] ?? ""}
                 >
                   #{t}
@@ -541,15 +540,15 @@ Examples:
 
       {/* Step 4: Submit */}
       <div className="bg-[var(--card-bg)] border-2 border-[var(--border)] rounded-xl p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-[var(--sage-dark)] mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-full bg-[var(--sage-medium)] text-white flex items-center justify-center text-sm font-bold">
+        <h2 className="text-xl font-semibold text-[var(--foreground)] mb-4 flex items-center gap-2">
+          <span className="w-8 h-8 rounded-full bg-[var(--primary)] text-white flex items-center justify-center text-sm font-bold">
             4
           </span>
           Review & Save
         </h2>
 
-        <div className="bg-[var(--sage-light)]/30 rounded-lg p-4 mb-4">
-          <p className="text-sm text-[var(--sage-dark)] mb-2">
+        <div className="bg-[var(--secondary)]/30 rounded-lg p-4 mb-4">
+          <p className="text-sm text-[var(--foreground)] mb-2">
             <strong>Note Summary:</strong>
           </p>
           <ul className="text-sm text-[var(--text-muted)] space-y-1 ml-4">
@@ -570,7 +569,7 @@ Examples:
 
         <button
           onClick={handleSubmit}
-          className="w-full bg-[var(--sage-dark)] hover:bg-[var(--sage-medium)] text-white px-6 py-4 rounded-lg transition-colors font-bold text-lg shadow-lg"
+          className="w-full bg-[var(--primary-dark)] hover:bg-[var(--primary)] text-white px-6 py-4 rounded-lg transition-colors font-bold text-lg shadow-lg"
         >
           Save Game Note
         </button>

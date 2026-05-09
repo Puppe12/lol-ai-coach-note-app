@@ -62,7 +62,7 @@ export default function LoginPage() {
   return (
     <div className="max-w-md mx-auto p-6 mt-20">
       <div className="bg-[var(--card-bg)] border border-[var(--border)] rounded-lg shadow-sm p-8">
-        <h1 className="text-2xl font-bold text-[var(--sage-dark)] mb-6">
+        <h1 className="text-2xl font-bold text-[var(--foreground)] mb-6">
           Login to LoL Coach
         </h1>
 
@@ -70,7 +70,7 @@ export default function LoginPage() {
           <div>
             <label
               htmlFor="userId"
-              className="block text-sm font-medium text-[var(--sage-dark)] mb-2"
+              className="block text-sm font-medium text-[var(--foreground)] mb-2"
             >
               Username or Email
             </label>
@@ -95,7 +95,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[var(--sage-medium)] text-white px-4 py-3 rounded-lg hover:bg-[var(--sage-dark)] transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-[var(--primary)] text-white px-4 py-3 rounded-lg hover:bg-[var(--primary-dark)] transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Logging in..." : "Login"}
           </button>

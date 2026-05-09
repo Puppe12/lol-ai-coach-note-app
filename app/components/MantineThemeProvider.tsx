@@ -9,18 +9,17 @@ import { Notifications } from "@mantine/notifications";
 import { useTheme } from "@/app/contexts/ThemeContext";
 import { ReactNode } from "react";
 
-// Sage green palette - muted, natural tones
 const sageGreen: MantineColorsTuple = [
-  "#f1f3e0", // sage-cream
-  "#e8eed9",
-  "#d2dcb6", // sage-light
-  "#c5d3a8",
-  "#b3c89f",
-  "#a1bc98", // sage-medium
-  "#8fa986",
-  "#778873", // sage-dark
-  "#606e5f",
-  "#4a544a",
+  "#f6f7f4",
+  "#e8ece4",
+  "#d2dacb",
+  "#b8c4b0",
+  "#9fb199",
+  "#869f83",
+  "#6e8a6d",
+  "#5a735a",
+  "#485c48",
+  "#374737",
 ];
 
 const theme = createTheme({
@@ -32,7 +31,7 @@ const theme = createTheme({
   headings: {
     fontFamily: "var(--font-geist-sans), Arial, Helvetica, sans-serif",
   },
-  white: "var(--background)",
+  white: "#FFFFFF",
   black: "var(--foreground)",
 });
 
@@ -44,6 +43,14 @@ export function MantineThemeProvider({ children }: { children: ReactNode }) {
       theme={theme}
       defaultColorScheme="auto"
       forceColorScheme={appTheme === "dark" ? "dark" : "light"}
+      cssVariablesResolver={() => ({
+        variables: {
+          "--mantine-color-body": "var(--background)",
+          "--mantine-color-text": "var(--foreground)",
+        },
+        light: {},
+        dark: {},
+      })}
     >
       <Notifications position="top-right" />
       {children}

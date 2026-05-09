@@ -1,61 +1,60 @@
 @import "tailwindcss";
 
+/* Make Tailwind `dark:` utilities follow our ThemeContext attribute */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 :root {
-  /* Sage Green Palette */
-  --sage-cream: #f1f3e0;
-  --sage-light: #d2dcb6;
-  --sage-medium: #a1bc98;
-  --sage-dark: #778873;
+  --background: #f6f7f4;
+  --foreground: #1f2933;
 
-  /* Light Theme colors */
-  --background: var(--sage-cream);
-  --foreground: var(--sage-dark);
-  --primary: var(--sage-medium);
-  --primary-dark: var(--sage-dark);
-  --header-bg: var(--sage-medium);
-  --secondary: var(--sage-light);
-  --border: var(--sage-light);
+  --primary: #6e8a6d;
+  --primary-dark: #5a735a;
+
+  --secondary: #d2dacb;
+
+  --header-bg: #ffffff;
+
   --card-bg: #ffffff;
-  --text-muted: #6b7a6a;
 
-  /* Step flow circle colors */
-  --step-circle-bg: #f1f3e0;
-  --step-circle-active: var(--sage-dark);
-  --step-text: var(--sage-dark);
+  --border: #e3e8e0;
 
-  /* Error colors for light mode */
-  --error-text: #dc2626;
+  --text-muted: #6b7280;
+
+  --step-circle-bg: #eef2ea;
+  --step-circle-active: #6e8a6d;
+  --step-text: #374151;
+
+  /* Errors */
+  --error-text: #b91c1c;
   --error-bg: #fef2f2;
   --error-border: #fecaca;
 }
 
-/* Dark Theme - Black with sage green accents */
 [data-theme="dark"] {
-  --background: #1a1a1a;
-  --foreground: #ffffff;
-  --primary: #a1bc98;
-  --primary-dark: #606e5f;
-  --header-bg: var(--primary-dark);
-  --secondary: #778873;
-  --border: #3a3a3a;
-  --card-bg: #252525;
-  --text-muted: #b0b0b0;
+  --background: #111513;
+  --foreground: #e5e7eb;
 
-  /* Step flow circle colors for dark mode */
-  --step-circle-bg: #2a2a2a;
-  --step-circle-active: var(--primary-dark);
-  --step-text: #ffffff;
+  --primary: #9fb199;
+  --primary-dark: #6e8a6d;
 
-  /* Sage colors adapted for dark mode */
-  --sage-cream: #1a1a1a;
-  --sage-light: #778873;
-  --sage-medium: #a1bc98;
-  --sage-dark: #d2dcb6;
+  --secondary: #5a735a;
 
-  /* Error colors for dark mode */
+  --header-bg: #161b18;
+
+  --card-bg: #1b211e;
+
+  --border: #2a322d;
+
+  --text-muted: #9ca3af;
+
+  --step-circle-bg: #202723;
+  --step-circle-active: #9fb199;
+  --step-text: #e5e7eb;
+
+  /* Errors */
   --error-text: #fca5a5;
-  --error-bg: #7f1d1d;
-  --error-border: #991b1b;
+  --error-bg: #3a1212;
+  --error-border: #7f1d1d;
 }
 
 /* Step flow utilities */
@@ -78,4 +77,28 @@ body {
   transition:
     background-color 0.2s ease,
     color 0.2s ease;
+}
+
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  padding: 10px;
+}
+
+/* TODO: make these work */
+.toast-container .success {
+  background-color: white;
+  color: black;
+}
+
+.toast-container .error {
+  background-color: var(--error-text);
+  color: black;
+}
+
+.toast-container .info {
+  background-color: rgb(236, 236, 142);
+  color: black;
 }

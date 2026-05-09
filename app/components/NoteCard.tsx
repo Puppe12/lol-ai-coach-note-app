@@ -13,13 +13,17 @@ import {
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { parseNoteText } from "../utils/noteParser";
 import type { Note } from "@/app/types/note";
+import { FaRegTrashAlt } from "react-icons/fa";
+import { useTheme } from "../contexts/ThemeContext";
 
 type NoteCardProps = {
   note: Note;
+  onDelete: (noteId: string) => void;
 };
 
-export default function NoteCard({ note }: NoteCardProps) {
+export default function NoteCard({ note, onDelete }: NoteCardProps) {
   const [opened, setOpened] = useState(false);
+  const { theme } = useTheme();
 
   // Use structured data if available, otherwise parse text
   const hasStructured = !!note.structured;
@@ -61,12 +65,6 @@ export default function NoteCard({ note }: NoteCardProps) {
   const formattedDate = formatDate(note.createdAt);
   const tags = note.ai?.tags || [];
 
-  // Get snippet of improvements (first 2-3 lines)
-  const improvementsSnippet = improvements
-    ? improvements.split("\n").slice(0, 2).join("\n") +
-      (improvements.split("\n").length > 2 ? "..." : "")
-    : "";
-
   // Get outcome badge color
   const getOutcomeBadge = () => {
     if (gameOutcome === "victory") {
@@ -98,7 +96,7 @@ export default function NoteCard({ note }: NoteCardProps) {
       className="hover:shadow-md transition-shadow"
     >
       {/* Collapsed View - Always Visible */}
-      <div className="cursor-pointer" onClick={() => setOpened(!opened)}>
+      <div>
         <Group justify="space-between" mb="xs">
           <div className="flex-1">
             <Group gap="xs" mb="xs">
@@ -117,14 +115,24 @@ export default function NoteCard({ note }: NoteCardProps) {
                 </>
               )}
               {getOutcomeBadge()}
+              <span
+                className="cursor-pointer ml-auto"
+                onClick={() => onDelete(note._id)}
+              >
+                <FaRegTrashAlt style={{ color: "red" }} />
+              </span>
             </Group>
 
             {displayMatchup && (
-              <Text size="lg" fw={600} c="sageGreen.8" mb="sm">
+              <Text
+                size="lg"
+                fw={600}
+                c={theme === "dark" ? "white" : "sageGreen.8"}
+                mb="sm"
+              >
                 {displayMatchup}
               </Text>
             )}
-
             {/* Show improvements preview when collapsed, if it exists */}
             {!opened && improvements && (
               <div className="bg-rose-50 dark:bg-red-900/20 border border-rose-200/60 dark:border-red-800 rounded-lg p-3 mt-2">
