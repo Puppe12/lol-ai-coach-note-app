@@ -6,7 +6,7 @@ import { useTheme } from "@/app/contexts/ThemeContext";
 import { Moon, Sun } from "lucide-react";
 
 export default function Header() {
-  const { userId, isLoading, logout } = useAuth();
+  const { userId, userName, isLoading, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const isLoggedIn = userId !== null;
 
@@ -63,7 +63,7 @@ export default function Header() {
           ) : userId ? (
             <>
               <span className="text-sm text-white/70 font-medium">
-                {userId}
+                {userName ?? userId}
               </span>
               <button
                 onClick={logout}

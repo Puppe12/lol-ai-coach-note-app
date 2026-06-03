@@ -13,7 +13,6 @@ import {
   NotificationTypes,
   useNotification,
 } from "../contexts/ToastNotificationContext";
-
 type DateFilter = "all" | "today" | "thisWeek" | "thisMonth";
 type OutcomeFilter = "all" | "victory" | "defeat";
 

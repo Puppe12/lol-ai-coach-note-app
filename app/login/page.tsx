@@ -1,64 +1,82 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/app/contexts/AuthContext";
 
-export default function LoginPage() {
-  const [userId, setUserId] = useState("");
+function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [emailSent, setEmailSent] = useState(false);
   const router = useRouter();
-  const { login, userId: loggedInUserId, checkAuth } = useAuth();
+  const searchParams = useSearchParams();
+  const {
+    githubLogin,
+    googleLogin,
+    emailLogin,
+    userId: loggedInUserId,
+    isLoading,
+  } = useAuth();
+
+  const redirectTo = searchParams.get("callbackUrl") || "/notes";
 
   useEffect(() => {
-    // Check if already logged in
-    if (loggedInUserId) {
-      router.push("/notes");
+    if (!isLoading && loggedInUserId) {
+      router.push(redirectTo);
     }
-  }, [loggedInUserId, router]);
+  }, [loggedInUserId, isLoading, router, redirectTo]);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleGitHubLogin() {
+    setLoading(true);
+    setError(null);
+    try {
+      await githubLogin(redirectTo);
+    } catch {
+      setError("Failed to start GitHub sign-in");
+      setLoading(false);
+    }
+  }
+
+  async function handleGoogleLogin() {
+    setLoading(true);
+    setError(null);
+    try {
+      await googleLogin(redirectTo);
+    } catch {
+      setError("Failed to start Google sign-in");
+      setLoading(false);
+    }
+  }
+
+  /* TODO: Consider making this into an util if required, also moving it outside of this built function */
+  function isEmailValid(email: string) {
+    const emailRegex =
+      /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+    return emailRegex.test(email);
+  }
+
+  async function handleEmailLogin(email: string) {
     setLoading(true);
     setError(null);
 
-    if (!userId.trim()) {
-      setError("Please enter a username or email");
-      setLoading(false);
-      return;
-    }
-
-    // Validate length
-    if (userId.trim().length > 100) {
-      setError("Username must be 100 characters or less");
+    if (!email || isEmailValid(email) === false) {
+      setError("Valid email is required");
       setLoading(false);
       return;
     }
 
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: userId.trim() }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Login failed");
-      }
-
-      // Update global auth state
-      await login(userId.trim());
-
-      // Redirect to notes page
-      router.push("/notes");
-    } catch (err: any) {
-      setError(err.message || "Failed to login");
+      await emailLogin(email);
+      setEmailSent(true);
+    } catch {
+      setError("Failed to start Email sign-in");
+      setEmailSent(false);
+      setLoading(false);
+    } finally {
       setLoading(false);
     }
   }
-
   return (
     <div className="max-w-md mx-auto p-6 mt-20">
       <div className="bg-[var(--card-bg)] border border-[var(--border)] rounded-lg shadow-sm p-8">
@@ -66,45 +84,81 @@ export default function LoginPage() {
           Login to LoL Coach
         </h1>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {error && (
+          <p className="text-[var(--error-text)] text-sm bg-[var(--error-bg)] p-3 rounded-lg border border-[var(--error-border)] mb-4">
+            {error}
+          </p>
+        )}
+        <div className="flex flex-col gap-2">
           <div>
-            <label
-              htmlFor="userId"
-              className="block text-sm font-medium text-[var(--foreground)] mb-2"
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              disabled={loading || isLoading}
+              className="w-full bg-[var(--primary)] text-white px-4 py-3 rounded-lg hover:cursor-pointer hover:bg-[var(--primary-dark)] transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Username or Email
-            </label>
-            <input
-              id="userId"
-              type="text"
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
-              placeholder="Enter your username or email"
-              className="w-full border border-[var(--border)] rounded-lg p-3 bg-[var(--card-bg)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all"
-              disabled={loading}
-              autoFocus
-            />
-          </div>
+              {loading ? "Redirecting..." : "Sign in with Google"}
+            </button>
 
-          {error && (
-            <p className="text-[var(--error-text)] text-sm bg-[var(--error-bg)] p-3 rounded-lg border border-[var(--error-border)]">
-              {error}
+            <p className="my-2 text-sm text-[var(--text-muted)] text-center">
+              Sign in with your Google Account
             </p>
-          )}
+          </div>
+          <div>
+            <button
+              type="button"
+              onClick={handleGitHubLogin}
+              disabled={loading || isLoading}
+              className="w-full bg-[var(--primary)] text-white px-4 py-3 rounded-lg hover:cursor-pointer hover:bg-[var(--primary-dark)] transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? "Redirecting..." : "Sign in with GitHub"}
+            </button>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-[var(--primary)] text-white px-4 py-3 rounded-lg hover:bg-[var(--primary-dark)] transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? "Logging in..." : "Login"}
-          </button>
-        </form>
-
-        <p className="mt-4 text-sm text-[var(--text-muted)] text-center">
-          No password required. Enter your identifier to access your notes.
-        </p>
+            <p className="my-2 text-sm text-[var(--text-muted)] text-center">
+              Sign in with your GitHub account
+            </p>
+          </div>
+          <div>
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-3 rounded-lg border border-[var(--border)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+            />
+            {emailSent ? (
+              <p className="my-2 text-sm text-[var(--text-muted)] text-center">
+                A magic link has been sent to your email
+              </p>
+            ) : (
+              <button
+                type="button"
+                onClick={() => handleEmailLogin(email)}
+                disabled={loading || isLoading}
+                className="w-full bg-[var(--primary)] my-2 text-white px-4 py-3 rounded-lg hover:cursor-pointer hover:bg-[var(--primary-dark)] transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading
+                  ? "Sending link to email..."
+                  : "Sign in with a magic link"}
+              </button>
+            )}
+          </div>
+        </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="max-w-md mx-auto p-6 mt-20 text-center text-[var(--text-muted)]">
+          Loading...
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }
