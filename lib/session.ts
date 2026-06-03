@@ -5,6 +5,5 @@ import { auth } from "@/auth";
  */
 export async function getUserId(): Promise<string | null> {
   const session = await auth();
-  console.log("session:", session);
   return session?.user?.id ?? null;
 }

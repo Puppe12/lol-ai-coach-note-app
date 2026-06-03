@@ -44,7 +44,6 @@ function LoginForm() {
     try {
       await googleLogin(redirectTo);
     } catch {
-      console.log("test");
       setError("Failed to start Google sign-in");
       setLoading(false);
     }
