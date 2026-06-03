@@ -1,69 +1,83 @@
 "use client";
 
+import { createContext, useContext, ReactNode } from "react";
 import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  ReactNode,
-} from "react";
-import { useRouter } from "next/navigation";
+  SessionProvider,
+  useSession,
+  signIn,
+  signOut,
+  type SessionProviderProps,
+} from "next-auth/react";
+import { emailSignIn } from "../actions/serverAuth";
 
 interface AuthContextType {
   userId: string | null;
+  userName: string | null;
   isLoading: boolean;
-  login: (userId: string) => Promise<void>;
+  githubLogin: (callbackUrl?: string) => Promise<void>;
+  googleLogin: (callbackUrl?: string) => Promise<void>;
+  emailLogin: (email: string, callbackUrl?: string) => Promise<void>;
   logout: () => Promise<void>;
-  checkAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [userId, setUserId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
+function AuthContextProvider({ children }: { children: ReactNode }) {
+  const { data: session, status } = useSession();
 
-  const checkAuth = async () => {
-    try {
-      const res = await fetch("/api/auth/check");
-      const data = await res.json();
-      setUserId(data.userId);
-    } catch (error) {
-      setUserId(null);
-    } finally {
-      setIsLoading(false);
-    }
+  const userId = session?.user?.id ?? null;
+  const userName = session?.user?.name ?? session?.user?.email ?? null;
+  const isLoading = status === "loading";
+
+  const githubLogin = async (callbackUrl = "/notes") => {
+    await signIn("github", { callbackUrl });
   };
 
-  const login = async (userId: string) => {
-    setUserId(userId);
-    setIsLoading(false);
+  const googleLogin = async (callbackUrl = "/notes") => {
+    await signIn("google", { callbackUrl });
+  };
+
+  const emailLogin = async (email: string, callbackUrl = "/notes") => {
+    try {
+      await emailSignIn(email, callbackUrl);
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
 
   const logout = async () => {
-    try {
-      await fetch("/api/auth/logout", { method: "POST" });
-      setUserId(null);
-      router.push("/login");
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
+    await signOut({ callbackUrl: "/login" });
   };
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
+  return (
+    <AuthContext.Provider
+      value={{
+        userId,
+        userName,
+        isLoading,
+        githubLogin,
+        googleLogin,
+        emailLogin,
+        logout,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+}
 
-  const value = {
-    userId,
-    isLoading,
-    login,
-    logout,
-    checkAuth,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+export function AuthProvider({
+  children,
+  session,
+}: {
+  children: ReactNode;
+  session?: SessionProviderProps["session"];
+}) {
+  return (
+    <SessionProvider session={session}>
+      <AuthContextProvider>{children}</AuthContextProvider>
+    </SessionProvider>
+  );
 }
 
 export function useAuth() {

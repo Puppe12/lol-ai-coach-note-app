@@ -105,9 +105,8 @@ export default function NoteCard({ note, onDelete }: NoteCardProps) {
               </Text>
               {note.summonerName && (
                 <>
-                  {/* TODO: Use Icons instead */}
                   <Text size="sm" c="dimmed">
-                    •
+                    -
                   </Text>
                   <Text size="sm" fw={500} c="sageGreen.7">
                     {note.summonerName}

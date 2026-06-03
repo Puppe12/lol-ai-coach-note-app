@@ -5,6 +5,7 @@ import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 import Header from "@/app/components/Header";
 import { AuthProvider } from "@/app/contexts/AuthContext";
+import { auth } from "@/auth";
 import { ThemeProvider } from "@/app/contexts/ThemeContext";
 import { MantineThemeProvider } from "@/app/components/MantineThemeProvider";
 import { ToastNotificationProvider } from "@/app/contexts/ToastNotificationContext";
@@ -23,11 +24,13 @@ export const metadata: Metadata = {
   description: "Note app for tracking improvement process",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
+
   return (
     <html lang="en">
       <body
@@ -35,7 +38,7 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <MantineThemeProvider>
-            <AuthProvider>
+            <AuthProvider session={session}>
               <ToastNotificationProvider>
                 <Header />
                 <main>{children}</main>
