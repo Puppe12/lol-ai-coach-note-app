@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ErrorNotification from "@/app/components/ErrorNotification";
 import { useSettings } from "../hooks/useSettings";
+import { ImagePicker } from "../components/ImagePicker";
 
 export default function NewNotePage() {
   const router = useRouter();
@@ -332,24 +333,7 @@ export default function NewNotePage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-              Draft/Lobby Screenshot{" "}
-              <span className="text-red-500 dark:text-red-400">*</span>
-            </label>
-            <div className="relative">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="w-full border-2 border-dashed border-[var(--border)] rounded-lg p-4 bg-[var(--secondary)]/20 text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all cursor-pointer hover:border-[var(--primary)]"
-              />
-            </div>
-            {imageFile && (
-              <div className="mt-2 flex items-center gap-2 text-sm text-[var(--foreground)]">
-                <span className="font-medium">Selected:</span>
-                <span>{imageFile.name}</span>
-              </div>
-            )}
+            <ImagePicker onChange={(file) => setImageFile(file)} />
           </div>
 
           <button
