@@ -2,18 +2,22 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/app/contexts/AuthContext";
 import ErrorNotification from "@/app/components/ErrorNotification";
+import { useSettings } from "../hooks/useSettings";
 
 export default function NewNotePage() {
   const router = useRouter();
-  const { userId } = useAuth();
+
+  const { settings } = useSettings();
+
+  const [submitting, setSubmitting] = useState(false);
 
   // Separate fields for better UX
   const [matchup, setMatchup] = useState("");
   const [whatWentWell, setWhatWentWell] = useState("");
   const [whatWentPoorly, setWhatWentPoorly] = useState("");
-  const [username, setUsername] = useState(userId || "");
+
+  const [username, setUsername] = useState(settings?.summonerName ?? "");
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [draftResult, setDraftResult] = useState<any>(null);
@@ -69,6 +73,7 @@ export default function NewNotePage() {
     setError(null);
     const form = new FormData();
     form.append("image", imageFile);
+
     if (username) {
       form.append("summonerName", username);
     }
@@ -104,6 +109,7 @@ export default function NewNotePage() {
   };
 
   const handleSubmit = async () => {
+    setSubmitting(true);
     setError(null);
 
     if (!matchup.trim() && !draftResult) {
@@ -112,6 +118,7 @@ export default function NewNotePage() {
         details:
           "Please add a draft image and analyze it, or manually enter matchup info",
       });
+      setSubmitting(false);
       return;
     }
 
@@ -120,6 +127,7 @@ export default function NewNotePage() {
         message: "Missing game notes",
         details: "Please write what went well or poorly in this game",
       });
+      setSubmitting(false);
       return;
     }
 
@@ -151,6 +159,7 @@ export default function NewNotePage() {
       if (!res.ok) {
         if (res.status === 401) {
           window.location.href = "/login";
+          setSubmitting(false);
           return;
         }
         const data = await res.json();
@@ -158,6 +167,7 @@ export default function NewNotePage() {
           message: "Failed to save note",
           details: data.error || "Please try again",
         });
+        setSubmitting(false);
         return;
       }
 
@@ -170,6 +180,7 @@ export default function NewNotePage() {
       setTags([]);
       setGameOutcome("unknown");
       setError(null);
+      setSubmitting(false);
 
       alert("Note saved successfully!");
       router.push("/notes");
@@ -178,6 +189,7 @@ export default function NewNotePage() {
         message: "Failed to save note",
         details: error.message || "Network error occurred",
       });
+      setSubmitting(false);
     }
   };
 
@@ -241,6 +253,7 @@ export default function NewNotePage() {
       </div>
 
       {/* Error Notification */}
+      {/* Remove this component and use a Toast instead, toast will also handle the success-message */}
       {error && (
         <ErrorNotification
           message={error.message}
@@ -257,7 +270,7 @@ export default function NewNotePage() {
             className={`flex items-center gap-2 ${hasImage ? "step-text font-semibold" : "text-[var(--text-muted)]"}`}
           >
             <span
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${hasImage ? "step-circle-active text-white" : "step-circle-bg step-text border-2 border-[var(--primary-dark)]"}`}
+              className={`w-8 h-8 rounded-full flex items-center justify-center ${hasImage ? "step-circle-active text-white" : "step-circle-bg step-text border-2 border-[var(--primary-dark)]"}`}
             >
               1
             </span>
@@ -268,7 +281,7 @@ export default function NewNotePage() {
             className={`flex items-center gap-2 ${hasAnalysis ? "step-text font-semibold" : "text-[var(--text-muted)]"}`}
           >
             <span
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${hasAnalysis ? "step-circle-active text-white" : "step-circle-bg step-text border-2 border-[var(--primary-dark)]"}`}
+              className={`w-8 h-8 rounded-full flex items-center justify-center ${hasAnalysis ? "step-circle-active text-white" : "step-circle-bg step-text border-2 border-[var(--primary-dark)]"}`}
             >
               2
             </span>
@@ -571,7 +584,7 @@ Examples:
           onClick={handleSubmit}
           className="w-full bg-[var(--primary-dark)] hover:bg-[var(--primary)] text-white px-6 py-4 rounded-lg transition-colors font-bold text-lg shadow-lg"
         >
-          Save Game Note
+          {submitting ? "Submitting..." : "Save Game Note"}
         </button>
       </div>
     </div>
