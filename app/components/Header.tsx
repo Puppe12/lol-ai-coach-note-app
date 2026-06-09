@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { useTheme } from "@/app/contexts/ThemeContext";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, Settings } from "lucide-react";
 
 export default function Header() {
   const { userId, userName, isLoading, logout } = useAuth();
@@ -24,6 +24,16 @@ export default function Header() {
           LoL Coach
         </Link>
         <nav className="flex items-center space-x-3">
+          {userId && (
+            <Link
+              href="/settings"
+              className="p-2 rounded-lg bg-[var(--primary)] text-white hover:bg-[var(--primary-dark)] transition-colors"
+              aria-label="Settings"
+              title="Settings"
+            >
+              <Settings className="w-5 h-5" />
+            </Link>
+          )}
           <button
             onClick={toggleTheme}
             className="p-2 rounded-lg bg-[var(--primary)] text-white hover:bg-[var(--primary-dark)] transition-colors"

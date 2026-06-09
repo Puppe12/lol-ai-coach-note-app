@@ -6,7 +6,9 @@ import clientPromise from "@/lib/mongodb";
 import Nodemailer from "next-auth/providers/nodemailer";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: MongoDBAdapter(clientPromise),
+  adapter: MongoDBAdapter(clientPromise, {
+    databaseName: process.env.MONGODB_DB || "lol-coach",
+  }),
   session: { strategy: "database" },
   trustHost: true,
   pages: { signIn: "/login" },
